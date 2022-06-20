@@ -16,4 +16,4 @@ Zhiyuan Zeng, Deyi Xiong<br>
 <i>ACL, 2021<i>, [[PDF]](https://aclanthology.org/2021.acl-short.58.pdf)
 - Unsupervised and Few-Shot Parsing from Pretrained Language Models <br>
 Zhiyuan Zeng, Deyi Xiong<br> 
-<i>Artificial Intelligence, Volume 305, April 2022<i>, [[PDF]](https://doi.org/10.1016/j.artint.2022.103665)
+<i>Artificial Intelligence, Volume 305, April 2022<i>, [[PDF]](https://arxiv.org/pdf/2206.04980.pdf)
