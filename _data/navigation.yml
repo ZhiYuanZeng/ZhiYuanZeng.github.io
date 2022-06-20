@@ -1,14 +1,15 @@
 # main links links
 main:
-  - title: "Publications"
-    url: /publications/
         
   - title: "Blog Posts"
     url: /year-archive/
     
   - title: "CV"
-    url: /cv/
+    url: http://zhiyuanzeng.github.io/files/CV_zhiyuan.pdf
   
+# - title: "Publications"
+#   url: /publications/
+
 # - title: "Talks"
 #   url: /talks/    
 
