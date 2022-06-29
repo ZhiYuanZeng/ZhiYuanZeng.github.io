@@ -1,11 +1,10 @@
 # main links links
 main:
-        
-  - title: "Blog Posts"
-    url: /year-archive/
-    
   - title: "CV"
     url: http://zhiyuanzeng.github.io/files/CV_zhiyuan.pdf
+
+# - title: "Blog Posts"
+#   url: /year-archive/
   
 # - title: "Publications"
 #   url: /publications/
