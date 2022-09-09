@@ -8,7 +8,7 @@ redirect_from:
   - /about.html
 ---
 
-I am a postgraduate student in Tianjin University, supervised by professor Deyi Xiong. My research interest includes machine translation, robustness and structure prediction. I am currently working on massive multilingual machine translation with Mixtures of Experts.
+I am a postgraduate student in Tianjin University, supervised by professor Deyi Xiong. My research interest includes machine translation, robustness and structured prediction. I am currently working on massive multilingual machine translation.
 
 ## Publications
 - An Empirical Study on Adversarial Attack on NMT: Languages and Positions Matter<br> 
