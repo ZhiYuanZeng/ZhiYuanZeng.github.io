@@ -16,7 +16,7 @@ Zhiyuan Zeng, Deyi Xiong<br>
 <i>Association for Computational Linguistics (ACL), 2021<i>, [[PDF]](https://aclanthology.org/2021.acl-short.58.pdf)
 - Unsupervised and Few-Shot Parsing from Pretrained Language Models <br>
 Zhiyuan Zeng, Deyi Xiong<br> 
-<i>The journal of Artificial Intelligence (AIJ), Volume 305, April 2022<i>, [[PDF]](https://arxiv.org/pdf/2206.04980.pdf)
+<i>Artificial Intelligence (AIJ), Volume 305, April 2022<i>, [[PDF]](https://arxiv.org/pdf/2206.04980.pdf)
 - SCoMoE: Efficient Mixtures of Experts with Structured Communication <br>
 Zhiyuan Zeng, Deyi Xiong<br> 
 <i>International Conference on Learning Representations (ICLR 2023)<i>, [[PDF]](https://openreview.net/pdf?id=s-c96mSU0u5)
