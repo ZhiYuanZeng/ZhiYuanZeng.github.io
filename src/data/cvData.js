@@ -56,7 +56,7 @@ export const cvData = {
     {
       title: "Revisiting the Test-Time Scaling of o1-like Models: Do they Truly Possess Test-Time Scaling Capabilities?",
       authors: "Zhiyuan Zeng, Xipeng Qiu, et al.",
-      venue: "Under Review",
+      venue: "ACL",
       year: "2025",
       links: { pdf: "https://arxiv.org/abs/2502.12215" }
     },
