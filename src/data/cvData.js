@@ -8,7 +8,7 @@ export const cvData = {
   ],
   contact: {
     email: "zhiyuan.zeng.nlper@gmail.com",
-    location: "Shanghai, China",
+    location: "Beijing, China",
     scholar: "https://scholar.google.com/citations?user=TFo8wCEAAAAJ&hl=zh-CN",
     github: "https://github.com/",
     cv: "/CV.pdf",
@@ -30,7 +30,7 @@ export const cvData = {
     {
       school: "Fudan University & ByteDance Seed",
       degree: "Joint PhD in Computer Science",
-      location: "Shanghai, China",
+      location: "Beijing, China",
       period: "2023 – Present",
       mentors: "Prof. Xipeng Qiu & Wenhao Huang"
     },
@@ -47,7 +47,7 @@ export const cvData = {
     {
       company: "ByteDance Seed",
       role: "Research Intern, Seed Edge",
-      location: "Shanghai, China",
+      location: "Beijing, China",
       period: "April 2025 – Present",
       bullets: [
         "Synthetic Data: Long-Context and Scalable Synthetic Data.",
