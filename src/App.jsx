@@ -1,177 +1,178 @@
 import React from 'react';
 import { cvData } from './data/cvData';
-import { Mail, Github, MapPin, ExternalLink, BookOpen, GraduationCap, Briefcase, FlaskConical } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 function App() {
-  const fadeInUp = {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.5 }
-  };
-
-  const staggerContainer = {
-    animate: {
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
+  const { name, nameZh, contact, bio, researchInterests, education, experience, publicationGroups } = cvData;
 
   return (
-    <div className="container">
-      {/* Hero Section */}
-      <motion.header
-        className="section"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <div className="flex flex-col items-center mb-6">
+    <div className="page">
+      <main className="container">
+        {/* Header: photo + bio */}
+        <header className="header">
+          <div className="header-photo">
+            <img src={contact.photo} alt={name} />
+          </div>
 
-          <h1 style={{ fontSize: '3rem', fontWeight: '800', marginBottom: '0.5rem', background: 'linear-gradient(45deg, var(--text-primary), var(--text-secondary))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            {cvData.name}
-          </h1>
-        </div>
-        <p className="text-secondary" style={{ fontSize: '1.25rem', marginBottom: '1.5rem' }}>
-          {cvData.title} @ {cvData.affiliations.join(' & ')}
-        </p>
+          <div className="header-info">
+            <h1 className="name">
+              {name}
+              {nameZh && <span className="name-zh"> ({nameZh})</span>}
+            </h1>
 
-        <div className="flex gap-4 text-sm text-secondary">
-          <a href={`mailto:${cvData.contact.email}`} className="flex items-center gap-2 hover:text-primary">
-            <Mail size={16} /> {cvData.contact.email}
-          </a>
-          <span className="flex items-center gap-2">
-            <MapPin size={16} /> {cvData.contact.location}
-          </span>
-          <a href="/CV.pdf" className="flex items-center gap-2 hover:text-primary" target="_blank" rel="noopener noreferrer">
-            <BookOpen size={16} /> CV
-          </a>
-          {/* <a href={cvData.contact.github} className="flex items-center gap-2 hover:text-primary">
-            <Github size={16} /> GitHub
-          </a> */}
-        </div>
-      </motion.header>
+            <p className="affiliation">
+              Joint PhD Student,{' '}
+              {cvData.affiliations.map((aff, i) => (
+                <React.Fragment key={aff.name}>
+                  <a href={aff.url} target="_blank" rel="noopener noreferrer">{aff.name}</a>
+                  {i < cvData.affiliations.length - 1 ? ' & ' : ''}
+                </React.Fragment>
+              ))}
+            </p>
 
-      {/* Research Interests */}
-      <motion.section
-        className="section"
-        variants={fadeInUp}
-        initial="initial"
-        whileInView="animate"
-        viewport={{ once: true }}
-      >
-        <h2 className="section-title flex items-center gap-2">
-          <FlaskConical size={24} /> Research Interests
-        </h2>
-        <div className="flex gap-2 flex-wrap">
-          {cvData.researchInterests.map((interest, index) => (
-            <span key={index} style={{
-              padding: '0.5rem 1rem',
-              background: 'var(--bg-secondary)',
-              borderRadius: '20px',
-              border: '1px solid var(--border-color)',
-              fontSize: '0.9rem',
-              fontWeight: '500'
-            }}>
-              {interest}
-            </span>
+            <p className="advisors">
+              Advised by{' '}
+              <a href="https://xpqiu.github.io/" target="_blank" rel="noopener noreferrer">Xipeng Qiu</a>
+              {' '}and Wenhao Huang.
+            </p>
+
+            <ul className="contact-list">
+              <li>
+                <a href={`mailto:${contact.email}`}>{contact.email}</a>
+              </li>
+              <li>
+                <a href={contact.scholar} target="_blank" rel="noopener noreferrer">Google Scholar</a>
+                <span className="sep">/</span>
+                <a href={contact.cv} target="_blank" rel="noopener noreferrer">CV</a>
+                <span className="sep">/</span>
+                <a href={contact.github} target="_blank" rel="noopener noreferrer">GitHub</a>
+              </li>
+              <li className="muted">{contact.location}</li>
+            </ul>
+          </div>
+        </header>
+
+        {/* About */}
+        <section className="section">
+          <h2 className="section-title">About</h2>
+          {bio.map((p, i) => (
+            <p key={i} className="prose">{p}</p>
           ))}
-        </div>
-      </motion.section>
+          <p className="prose">
+            <strong>Research interests:</strong>{' '}
+            {researchInterests.join(' · ')}.
+          </p>
+        </section>
 
-      {/* Education */}
-      <motion.section
-        className="section"
-        variants={staggerContainer}
-        initial="initial"
-        whileInView="animate"
-        viewport={{ once: true }}
-      >
-        <h2 className="section-title flex items-center gap-2">
-          <GraduationCap size={24} /> Education
-        </h2>
-        <div className="flex flex-col gap-4">
-          {cvData.education.map((edu, index) => (
-            <motion.div key={index} className="card" variants={fadeInUp}>
-              <div className="flex justify-between items-center mb-2">
-                <h3 className="font-bold" style={{ fontSize: '1.1rem' }}>{edu.school}</h3>
-                <span className="text-sm text-secondary">{edu.location}</span>
-              </div>
-              <div className="flex justify-between items-center mb-2">
-                <span className="italic">{edu.degree}</span>
-                <span className="text-sm text-secondary">{edu.period}</span>
-              </div>
-              {edu.mentors && (
-                <p className="text-sm text-secondary">Mentors: {edu.mentors}</p>
-              )}
-            </motion.div>
-          ))}
-        </div>
-      </motion.section>
-
-      {/* Publications */}
-      <motion.section
-        className="section"
-        variants={staggerContainer}
-        initial="initial"
-        whileInView="animate"
-        viewport={{ once: true }}
-      >
-        <h2 className="section-title flex items-center gap-2">
-          <BookOpen size={24} /> Publications
-        </h2>
-        <div className="flex flex-col gap-4">
-          {cvData.publications.map((pub, index) => (
-            <motion.div key={index} className="card" variants={fadeInUp}>
-              <h3 className="font-bold mb-2" style={{ fontSize: '1.1rem' }}>{pub.title}</h3>
-              <p className="text-sm text-secondary mb-2">{pub.authors}</p>
-              <div className="flex justify-between items-center">
-                <span className="italic text-sm" style={{ color: 'var(--accent-green)' }}>{pub.venue}, {pub.year}</span>
-                {pub.links.pdf && (
-                  <a href={pub.links.pdf} className="flex items-center gap-1 text-sm font-bold" target="_blank" rel="noopener noreferrer">
-                    PDF <ExternalLink size={14} />
-                  </a>
+        {/* Experience */}
+        <section className="section">
+          <h2 className="section-title">Experience</h2>
+          <ul className="entry-list">
+            {experience.map((exp, i) => (
+              <li key={i} className="entry">
+                <div className="entry-head">
+                  <span className="entry-title">{exp.company}</span>
+                  <span className="entry-period">{exp.period}</span>
+                </div>
+                <div className="entry-sub">
+                  <span className="italic">{exp.role}</span>
+                  <span className="muted small"> · {exp.location}</span>
+                </div>
+                {exp.bullets && (
+                  <ul className="bullet-list">
+                    {exp.bullets.map((b, j) => (
+                      <li key={j}>{b}</li>
+                    ))}
+                  </ul>
                 )}
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </motion.section>
+              </li>
+            ))}
+          </ul>
+        </section>
 
-      {/* Experience */}
-      <motion.section
-        className="section"
-        variants={staggerContainer}
-        initial="initial"
-        whileInView="animate"
-        viewport={{ once: true }}
-      >
-        <h2 className="section-title flex items-center gap-2">
-          <Briefcase size={24} /> Industry Experience
-        </h2>
-        <div className="flex flex-col gap-4">
-          {cvData.experience.map((exp, index) => (
-            <motion.div key={index} className="card" variants={fadeInUp}>
-              <div className="flex justify-between items-center mb-2">
-                <h3 className="font-bold" style={{ fontSize: '1.1rem' }}>{exp.company}</h3>
-                <span className="text-sm text-secondary">{exp.location}</span>
-              </div>
-              <div className="flex justify-between items-center mb-2">
-                <span className="italic">{exp.role}</span>
-                <span className="text-sm text-secondary">{exp.period}</span>
-              </div>
-              <p className="text-sm text-secondary">{exp.description}</p>
-            </motion.div>
-          ))}
-        </div>
-      </motion.section>
+        {/* Publications */}
+        <section className="section">
+          <h2 className="section-title">Publications</h2>
+          <p className="prose muted small">
+            <a href={contact.scholar} target="_blank" rel="noopener noreferrer">Full list on Google Scholar</a>.
+            {' '}<sup>*</sup> indicates equal contribution.
+          </p>
 
-      <footer className="text-center text-secondary text-sm py-8">
-        <p>&copy; {new Date().getFullYear()} {cvData.name}. All rights reserved.</p>
-      </footer>
+          {publicationGroups.map((group) => (
+            <div key={group.topic} className="pub-group">
+              <h3 className="pub-topic">{group.topic}</h3>
+              <ol className="pub-list">
+                {group.items.map((pub, idx) => (
+                  <li key={idx} className="pub-item">
+                    <div className="pub-title">{pub.title}</div>
+                    <div className="pub-authors">
+                      {renderAuthors(pub.authors, name)}
+                    </div>
+                    <div className="pub-meta">
+                      <span className="pub-venue">{pub.venue}, {pub.year}</span>
+                      {pub.links?.pdf && (
+                        <>
+                          <span className="sep">·</span>
+                          <a href={pub.links.pdf} target="_blank" rel="noopener noreferrer">pdf</a>
+                        </>
+                      )}
+                      {pub.tag && (
+                        <span className="pub-tag">{pub.tag}</span>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          ))}
+        </section>
+
+        {/* Education */}
+        <section className="section">
+          <h2 className="section-title">Education</h2>
+          <ul className="entry-list">
+            {education.map((edu, i) => (
+              <li key={i} className="entry">
+                <div className="entry-head">
+                  <span className="entry-title">{edu.school}</span>
+                  <span className="entry-period">{edu.period}</span>
+                </div>
+                <div className="entry-sub">
+                  <span className="italic">{edu.degree}</span>
+                  <span className="muted small"> · {edu.location}</span>
+                </div>
+                {edu.mentors && (
+                  <div className="muted small">{edu.mentors}</div>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <footer className="footer">
+          <p>
+            Last updated {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}.
+            {' '}Built with React. Inspired by academic homepages.
+          </p>
+        </footer>
+      </main>
     </div>
   );
+}
+
+function renderAuthors(authorsStr, myName) {
+  const parts = authorsStr.split(/(,\s*)/);
+  return parts.map((part, i) => {
+    const cleaned = part.replace(/\*/g, '').trim();
+    if (cleaned === myName) {
+      const hasStar = part.includes('*');
+      return (
+        <strong key={i}>
+          {myName}{hasStar ? '*' : ''}
+        </strong>
+      );
+    }
+    return <React.Fragment key={i}>{part}</React.Fragment>;
+  });
 }
 
 export default App;
