@@ -10,7 +10,6 @@ export const cvData = {
     email: "zhiyuan.zeng.nlper@gmail.com",
     location: "Beijing, China",
     scholar: "https://scholar.google.com/citations?user=TFo8wCEAAAAJ&hl=zh-CN",
-    github: "https://github.com/",
     cv: "/CV.pdf",
     photo: "/me.jpg"
   },

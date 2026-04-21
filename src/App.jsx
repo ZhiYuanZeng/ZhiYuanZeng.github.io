@@ -43,8 +43,6 @@ function App() {
                 <a href={contact.scholar} target="_blank" rel="noopener noreferrer">Google Scholar</a>
                 <span className="sep">/</span>
                 <a href={contact.cv} target="_blank" rel="noopener noreferrer">CV</a>
-                <span className="sep">/</span>
-                <a href={contact.github} target="_blank" rel="noopener noreferrer">GitHub</a>
               </li>
               <li className="muted">{contact.location}</li>
             </ul>
