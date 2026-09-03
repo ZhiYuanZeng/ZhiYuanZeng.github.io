@@ -36,14 +36,23 @@
     return urls.get(normalize(path)) ?? path;
   };
 
-  const decryptFile = async (entry) => {
-    const response = await fetch(`./assets/vault/${entry.id}.bin`, { cache: "force-cache" });
+  const fetchSealed = async (entry, cache) => {
+    const response = await fetch(`./assets/vault/${entry.id}.bin`, { cache });
     if (!response.ok) throw new Error(`vault: cannot load ${entry.id}`);
-    const plain = await crypto.subtle.decrypt(
-      { name: "AES-GCM", iv: fromBase64(entry.iv) },
-      key,
-      await response.arrayBuffer(),
-    );
+    return response.arrayBuffer();
+  };
+
+  const decryptFile = async (entry) => {
+    const parameters = { name: "AES-GCM", iv: fromBase64(entry.iv) };
+    let plain;
+
+    try {
+      plain = await crypto.subtle.decrypt(parameters, key, await fetchSealed(entry, "default"));
+    } catch {
+      // A stale copy from an earlier build cannot authenticate; go past the cache once.
+      plain = await crypto.subtle.decrypt(parameters, key, await fetchSealed(entry, "reload"));
+    }
+
     return URL.createObjectURL(new Blob([plain], { type: entry.type }));
   };
 
@@ -145,7 +154,7 @@
       await decryptEverything();
     } catch {
       input.disabled = false;
-      note.textContent = "解密失败，刷新页面再试一次。";
+      note.textContent = "解密失败，请按 Shift 强制刷新页面再试一次。";
       return;
     }
 
@@ -180,7 +189,7 @@
     element.src = PLACEHOLDER;
   });
 
-  fetch(MANIFEST_URL, { cache: "no-cache" })
+  fetch(MANIFEST_URL, { cache: "no-store" })
     .then((response) => {
       if (!response.ok) throw new Error("vault: missing manifest");
       return response.json();
