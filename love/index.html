@@ -1,0 +1,631 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#fff3f8" />
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet" />
+    <title>丫头的心动档案</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath fill='%23ed3b87' d='M16 28C2 18 3 8 9 6c4-1 7 2 7 5 0-3 3-6 7-5 6 2 7 12-7 22z'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body class="intro-active is-locked">
+    <div class="noise" aria-hidden="true"></div>
+    <div class="scroll-progress" aria-hidden="true"><span id="scroll-progress-bar"></span></div>
+    <div id="fx-layer" class="fx-layer" aria-hidden="true"></div>
+    <section id="vault-gate" class="vault-gate" aria-label="档案访问密码">
+      <form id="vault-form" class="vault-gate__card" autocomplete="off">
+        <p class="utility">PRIVATE ARCHIVE · LOCKED</p>
+        <strong>这份档案只写给一个人</strong>
+        <p>输入四位密码，回忆才会解锁。</p>
+        <input
+          id="vault-pass"
+          type="password"
+          inputmode="numeric"
+          autocomplete="off"
+          maxlength="16"
+          placeholder="• • • •"
+          aria-label="访问密码"
+        />
+        <button type="submit">进入档案</button>
+        <p id="vault-note" class="vault-gate__note">提示：四位数字，你一定知道的那个。</p>
+      </form>
+    </section>
+    <section id="intro-sequence" class="intro-sequence" aria-label="档案接入动画">
+      <div class="intro-sequence__rings" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="intro-sequence__content">
+        <p class="utility">PRIVATE MEMORY CHANNEL</p>
+        <strong>正在接入心动档案</strong>
+        <div class="intro-sequence__meter"><span></span></div>
+        <small id="intro-status">校准时间坐标 2020.12.29</small>
+      </div>
+      <button id="skip-intro" type="button">跳过</button>
+    </section>
+
+    <main id="museum" class="museum">
+      <header class="hero">
+        <nav class="topbar" aria-label="档案导航">
+          <span>CASE № 1229</span>
+          <button id="sound-toggle" class="sound-toggle" type="button" aria-pressed="false">
+            <span class="sound-toggle__dot"></span>
+            交互音：关
+          </button>
+        </nav>
+
+        <div class="hero__content reveal">
+          <p class="utility">CONFIDENTIAL · HEARTBEAT EVIDENCE</p>
+          <h1>
+            <span class="hero__eyebrow">致我永远的</span>
+            <span class="hero__name" aria-label="丫头"><i>丫</i><i>头</i></span>
+          </h1>
+          <figure class="hero__portrait">
+            <img
+              src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-vault-src="./assets/photos/hero.webp"
+              alt="我们靠在一起的写真"
+              width="960"
+              height="1440"
+              fetchpriority="high"
+            />
+            <figcaption>证物 A-01 · 靠近是我们的本能</figcaption>
+          </figure>
+          <p class="hero__lead">这不是一份已经写完的故事。<br />它是一份准备和你一起更新一辈子的档案。</p>
+          <div class="hero__meta">
+            <div>
+              <span>档案建立</span>
+              <strong>2020.12.29</strong>
+            </div>
+            <div>
+              <span>最近更新</span>
+              <strong>2026.09.05</strong>
+            </div>
+            <div>
+              <span>当前状态</span>
+              <strong class="status-live">持续心动中</strong>
+            </div>
+          </div>
+        </div>
+
+        <button class="scroll-cue" type="button" data-scroll-to="cake-world">
+          <span>沿证物线索继续</span>
+          <span aria-hidden="true">↓</span>
+        </button>
+      </header>
+
+      <section class="countdown-panel reveal" aria-labelledby="countdown-title">
+        <div>
+          <p class="utility">BIRTHDAY SIGNAL</p>
+          <h2 id="countdown-title">距离丫头的生日</h2>
+        </div>
+        <p id="countdown" class="countdown">正在校准时间信号…</p>
+      </section>
+
+      <section id="cake-world" class="cake-world">
+        <div class="cake-console">
+          <div class="cake-world__heading">
+            <p class="utility">INTERACTIVE BIRTHDAY ARCHIVE</p>
+            <h2>把回忆藏进<br />生日蛋糕里</h2>
+            <p>按住鼠标左键拖动蛋糕，点开四层夹层看藏在里面的回忆；蜡烛也可以随时吹 —— 五根全部吹灭后，会有一场烟花。</p>
+          </div>
+          <div class="cake-readouts">
+            <div class="cake-counter"><span>已找到回忆</span><strong id="cake-memory-count">0 / 4</strong></div>
+            <div class="candle-counter"><span>生日蜡烛</span><strong id="candle-count">5</strong></div>
+          </div>
+          <nav class="cake-layer-nav" aria-label="蛋糕回忆夹层">
+            <button type="button" data-cake-memory="0"><span>01</span>冬夜初吻</button>
+            <button type="button" data-cake-memory="1"><span>02</span>奶油千层</button>
+            <button type="button" data-cake-memory="2"><span>03</span>古城春色</button>
+            <button type="button" data-cake-memory="3"><span>04</span>订婚约定</button>
+          </nav>
+          <div class="candle-controls">
+            <button id="mic-blow" class="mic-blow" type="button">
+              <span class="mic-blow__wave" aria-hidden="true"></span>用麦克风吹蜡烛
+            </button>
+            <button id="blow-candle" class="blow-candle" type="button">吹灭一根蜡烛</button>
+          </div>
+          <p id="cake-hint" class="cake-hint">拖动旋转 · 点击夹层看回忆 · 点击烛光吹蜡烛 · 滚轮缩放</p>
+        </div>
+        <div class="cake-stage">
+          <canvas id="cake-canvas" tabindex="0" aria-label="可旋转的三维生日蛋糕"></canvas>
+          <div class="cake-stage__halo" aria-hidden="true"></div>
+        </div>
+        <div id="candle-vision" class="candle-vision" aria-live="polite">
+          <div class="candle-vision__fireworks" aria-hidden="true">
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          </div>
+          <figure>
+            <img id="candle-vision-image" src="" alt="" />
+            <figcaption>
+              <span id="candle-vision-date"></span>
+              <strong id="candle-vision-title"></strong>
+              <p id="candle-vision-copy"></p>
+            </figcaption>
+          </figure>
+        </div>
+        <aside id="cake-memory-panel" class="cake-memory-panel" hidden>
+          <button id="cake-memory-close" type="button" aria-label="关闭回忆">×</button>
+          <div class="cake-memory-panel__image"><img id="cake-memory-image" src="./assets/first-embrace.svg" alt="" /></div>
+          <div>
+            <p id="cake-memory-date" class="utility"></p>
+            <h3 id="cake-memory-title"></h3>
+            <p id="cake-memory-story"></p>
+          </div>
+        </aside>
+        <div id="candle-wish" class="candle-wish" hidden>
+          <div class="candle-wish__glow" aria-hidden="true"></div>
+          <div class="candle-wish__card">
+            <span>五根蜡烛全部熄灭 · 愿望信号已收到</span>
+            <strong>愿丫头永远美丽、健康、快乐。</strong>
+            <em>2026.09.05 · 生日快乐</em>
+          </div>
+          <p class="candle-wish__dismiss">点击任意位置或按 Esc 收起烟花</p>
+        </div>
+      </section>
+
+      <section id="china-journey" class="china-journey">
+        <div class="journey-console">
+          <div class="china-journey__heading">
+            <p class="utility">LOVE RAILWAY · CHINA</p>
+            <h2>爱让我们跨越<br />一座又一座城</h2>
+            <p>从天津出发，按时间顺序点击地图上的六站：天津、北京、洛阳、上海、南昌，最后回到北京。每到一站，都会亮起一座地标，并翻出那座城市里属于我们的照片。</p>
+          </div>
+          <div class="journey-guide">
+            <span id="journey-step">01 / 06</span>
+            <strong id="journey-guide-title">请从天津出发</strong>
+            <p id="journey-guide-copy">点亮我们第一段异地旅程的起点。</p>
+          </div>
+          <p class="map-attribution">地图轮廓数据：@svg-maps/china，CC BY 4.0</p>
+        </div>
+        <div class="china-map-stage">
+          <svg id="china-map-svg" viewBox="0 0 774 569" role="img" aria-label="中国地图与异地城市路线">
+            <g id="china-provinces" class="china-provinces"></g>
+            <g id="journey-routes" class="journey-routes"></g>
+            <g id="journey-train" class="journey-train" transform="translate(554 260)">
+              <circle r="11" /><path d="M-6-4h12v8H-6zM-4 6h2m4 0h2" />
+            </g>
+            <g id="journey-stations" class="journey-stations"></g>
+          </svg>
+          <div class="journey-vignette" aria-hidden="true"></div>
+        </div>
+        <aside id="city-memory" class="city-memory" hidden>
+          <img id="city-memory-image" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-vault-src="./assets/photos/city-tianjin.webp" alt="" />
+          <div>
+            <p id="city-memory-route" class="utility"></p>
+            <h3 id="city-memory-title"></h3>
+            <p id="city-memory-copy"></p>
+            <button id="city-memory-continue" type="button">继续下一站</button>
+          </div>
+        </aside>
+      </section>
+
+      <section class="star-map section" aria-labelledby="star-map-title">
+        <div class="section__heading reveal">
+          <p class="utility">MEMORY CONSTELLATION · TAP TO SCAN</p>
+          <h2 id="star-map-title">心动星图</h2>
+          <p>点亮四颗记忆星，看看它们最终连成了什么。</p>
+        </div>
+        <div class="star-map__console reveal">
+          <div class="star-map__sky">
+            <svg viewBox="0 0 360 420" aria-hidden="true">
+              <path d="M65 318L126 102L276 174L291 348L65 318" />
+              <path class="star-map__heart-line" d="M126 102C80 42 20 112 126 210C232 112 172 42 126 102Z" />
+            </svg>
+            <div id="star-beam" class="star-beam" aria-hidden="true"></div>
+            <button class="memory-star memory-star--one" type="button" data-memory="0" aria-label="点亮 2020 年 12 月 29 日的记忆">
+              <i></i><span>2020.12.29</span>
+            </button>
+            <button class="memory-star memory-star--two" type="button" data-memory="1" aria-label="点亮 2021 年 5 月 20 日的记忆">
+              <i></i><span>2021.05.20</span>
+            </button>
+            <button class="memory-star memory-star--three" type="button" data-memory="2" aria-label="点亮 2023 年春天的记忆">
+              <i></i><span>2023.SPRING</span>
+            </button>
+            <button class="memory-star memory-star--four" type="button" data-memory="3" aria-label="点亮 2026 年 5 月 16 日的记忆">
+              <i></i><span>2026.05.16</span>
+            </button>
+            <div class="star-map__dust" aria-hidden="true"></div>
+          </div>
+          <div class="star-reader">
+            <p class="utility">STAR READER</p>
+            <strong id="star-title">等待第一颗星回应</strong>
+            <p id="star-story">轻触星星，读取藏在时间里的心动信号。</p>
+            <div class="star-progress" aria-label="已点亮的记忆数量">
+              <span id="star-progress-bar"></span>
+            </div>
+            <small id="star-count">0 / 4 MEMORIES FOUND</small>
+          </div>
+        </div>
+      </section>
+
+      <section id="timeline" class="timeline section">
+        <div class="section__heading reveal">
+          <p class="utility">EVIDENCE CHAIN · 01—04</p>
+          <h2>心动证物</h2>
+          <p>四段时光，拼出了我们一路走来的答案。</p>
+        </div>
+
+        <div class="evidence-line" aria-hidden="true"></div>
+
+        <article class="evidence reveal" data-case="01">
+          <div class="evidence__photo evidence__photo--illustration" aria-label="寒风中拥抱的原创卡通插画">
+            <svg class="embrace-art" viewBox="0 0 800 600" role="img" aria-labelledby="embrace-title embrace-desc">
+              <title id="embrace-title">寒风里的第一次拥抱</title>
+              <desc id="embrace-desc">冬夜咖啡馆外，一对年轻情侣在风中紧紧拥抱。</desc>
+              <defs>
+                <linearGradient id="night-sky" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#15233d" />
+                  <stop offset="1" stop-color="#7d365f" />
+                </linearGradient>
+                <linearGradient id="warm-window" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#fff0bd" />
+                  <stop offset="1" stop-color="#ff9dbd" />
+                </linearGradient>
+              </defs>
+              <rect width="800" height="600" fill="url(#night-sky)" />
+              <circle cx="676" cy="92" r="43" fill="#fff0f6" opacity=".9" />
+              <path d="M0 415L103 342l85 50 99-82 94 78 99-59 105 68 91-83 124 91v195H0z" fill="#111b30" />
+              <g transform="translate(42 185)">
+                <rect width="274" height="277" rx="7" fill="#36283c" />
+                <rect x="19" y="23" width="236" height="197" fill="url(#warm-window)" />
+                <path d="M137 23v197M19 120h236" stroke="#7d4260" stroke-width="9" />
+                <path d="M-12 0h298l-25-51H12z" fill="#ef8db4" />
+                <path d="M0-39h274M-6-20h286" stroke="#fff4f8" stroke-width="6" opacity=".7" />
+              </g>
+              <g transform="translate(250 118)">
+                <path d="M255 146c-23-57 13-112 68-111 56 0 91 56 68 112z" fill="#1a2235" />
+                <ellipse cx="323" cy="119" rx="54" ry="63" fill="#f0c0b0" />
+                <path d="M268 110c5-47 27-76 61-76 35 0 59 25 65 67-33-3-57-17-72-41-10 25-28 42-54 50z" fill="#1a2235" />
+                <path d="M235 190c52-49 119-43 162 8 33 40 46 108 50 220H184l19-164c5-31 15-49 32-64z" fill="#293f61" />
+                <path d="M130 168c-18-53 18-102 68-102 48 0 81 48 61 103z" fill="#291b2b" />
+                <ellipse cx="198" cy="142" rx="53" ry="61" fill="#f4c5b8" />
+                <path d="M145 134c4-45 27-70 59-69 31 1 54 24 59 61-29-4-50-17-65-37-10 23-27 38-53 45z" fill="#291b2b" />
+                <path d="M100 217c48-54 119-57 166-6 34 38 47 106 54 207H43l22-146c6-27 17-44 35-55z" fill="#ed8fb6" />
+                <path d="M239 248c48 20 83 56 105 107" fill="none" stroke="#dd75a4" stroke-width="48" stroke-linecap="round" />
+                <path d="M343 355c34-29 61-64 82-104" fill="none" stroke="#f0c0b0" stroke-width="22" stroke-linecap="round" />
+                <path d="M126 251c-45 33-78 75-100 126" fill="none" stroke="#dc78a6" stroke-width="48" stroke-linecap="round" />
+                <path d="M25 377c41-25 76-55 105-90" fill="none" stroke="#f4c5b8" stroke-width="22" stroke-linecap="round" />
+                <path d="M154 145c12 6 24 6 35 0M292 122c11 7 22 7 32 0" fill="none" stroke="#8b4657" stroke-width="4" stroke-linecap="round" />
+              </g>
+              <g class="embrace-snow" fill="#fff" opacity=".75">
+                <circle cx="718" cy="194" r="4" /><circle cx="654" cy="245" r="3" /><circle cx="744" cy="320" r="3" />
+                <circle cx="381" cy="78" r="3" /><circle cx="201" cy="92" r="4" /><circle cx="91" cy="126" r="3" />
+              </g>
+              <path class="embrace-heart" d="M680 402c14-26 53-13 46 16-7 25-46 44-46 44s-39-19-46-44c-7-29 32-42 46-16z" fill="#ff9dc4" />
+              <path class="embrace-wind" d="M390 161c-38-17-72-18-105-4M395 138c-41-25-78-31-113-20" fill="none" stroke="#bdecea" stroke-width="6" stroke-linecap="round" opacity=".7" />
+            </svg>
+            <span class="illustration-label">原创回忆插画 · WINTER 2020</span>
+            <button id="embrace-trigger" class="embrace-trigger" type="button">重现那阵风</button>
+          </div>
+          <div class="evidence__copy">
+            <p class="evidence__date">2020.12.29 · 初吻</p>
+            <h3>寒风里的第一次拥抱</h3>
+            <p>
+              本科时我们就在同一所学校，后来缘分又把我们带进同一所学校读研、同一个实验室、同一个导师门下。我很快喜欢上了那个活泼可爱的女孩，却一直害羞得没有说出口。
+            </p>
+            <p>
+              那段时间，我们常在学校咖啡馆约会，聊到快十二点才回宿舍。那天风很大，我说“好冷”，你便紧紧抱住了我。寒风没有停，但我们在拥抱和亲吻里，拥有了故事真正的开场。
+            </p>
+          </div>
+        </article>
+
+        <article class="evidence evidence--reverse reveal" data-case="02">
+          <div class="evidence__photo">
+            <img
+              src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-vault-src="./assets/photos/2021-05-20.webp"
+              alt="第一次一起过 520 做蛋糕时，我亲吻丫头的照片"
+              width="1080"
+              height="1440"
+              loading="lazy"
+              decoding="async"
+            />
+            <span class="photo-placeholder">请放入<br />DIY 蛋糕<br />的照片</span>
+          </div>
+          <div class="evidence__copy">
+            <p class="evidence__date">2021.05.20 · 奶油味</p>
+            <h3>两个人做的第一只蛋糕</h3>
+            <p>
+              第一次一起过 520，我们去了一家 DIY 蛋糕店，亲手做了一只奶油千层。它也许不够标准，却是世界上独一份的配方：一层笨拙，一层认真，还有好多好多喜欢。
+            </p>
+          </div>
+        </article>
+
+        <article class="evidence reveal" data-case="03">
+          <div class="evidence__photo">
+            <img
+              src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-vault-src="./assets/photos/2023-04-luoyang.webp"
+              alt="河南旅行时，丫头穿绿色古装长裙站在古建筑前"
+              width="1080"
+              height="1440"
+              loading="lazy"
+              decoding="async"
+            />
+            <span class="photo-placeholder">请放入<br />绿色古装<br />的照片</span>
+          </div>
+          <div class="evidence__copy">
+            <p class="evidence__date">2023.04 · 毕业旅行</p>
+            <h3>春风、古城和绿色长裙</h3>
+            <p>
+              我们一起毕业，又一起去了开封和洛阳。古城的春色里，你穿着绿色的古装长裙，像从很远的故事里走来，却刚好走到了我的身边。
+            </p>
+          </div>
+        </article>
+
+        <article class="evidence evidence--reverse reveal" data-case="04">
+          <div class="evidence__photo">
+            <img
+              src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-vault-src="./assets/photos/2026-05-16.webp"
+              alt="2026 年 5 月 16 日订婚现场，我们牵手看向镜头"
+              width="1080"
+              height="1440"
+              loading="lazy"
+              decoding="async"
+            />
+            <span class="photo-placeholder">请放入<br />订婚当天<br />的照片</span>
+          </div>
+          <div class="evidence__copy">
+            <p class="evidence__date">2026.05.16 · 订婚</p>
+            <h3>我们把以后写进了承诺</h3>
+            <p>
+              订婚的过程一波三折，但那些波折没有把我们推远。我们还是牵着手坚持下来，认真地许下了白头偕老的约定。从“我喜欢你”，走到了“往后余生都是你”。
+            </p>
+          </div>
+        </article>
+      </section>
+
+      <section class="photo-roll section" aria-labelledby="photo-roll-title">
+        <div class="section__heading reveal">
+          <p class="utility">VISUAL RECORDS · SWIPE TO REVIEW</p>
+          <h2 id="photo-roll-title">照片卷宗</h2>
+          <p>向左滑动，查看我们认真相爱、偶尔胡闹的样子。</p>
+        </div>
+        <div class="photo-deck reveal">
+          <div class="photo-deck__stage" id="photo-deck-stage">
+          <figure class="snapshot snapshot--landscape is-active" data-photo-index="0">
+            <img
+              src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-vault-src="./assets/photos/gallery-playful.webp"
+              alt="写真拍摄时，丫头趴在小哥背上比剪刀手"
+              width="1440"
+              height="960"
+              loading="lazy"
+              decoding="async"
+            />
+            <figcaption><span>RECORD 01</span>你负责可爱，我负责背着你走。</figcaption>
+          </figure>
+          <figure class="snapshot snapshot--portrait is-next" data-photo-index="1">
+            <img
+              src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-vault-src="./assets/photos/gallery-costume.webp"
+              alt="我们穿着古装站在红色长廊里"
+              width="960"
+              height="1440"
+              loading="lazy"
+              decoding="async"
+            />
+            <figcaption><span>RECORD 02</span>换一身衣裳，也还是一眼就认出你。</figcaption>
+          </figure>
+          <figure class="snapshot snapshot--portrait is-back" data-photo-index="2">
+            <img
+              src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-vault-src="./assets/photos/gallery-formal.webp"
+              alt="我们穿着礼服牵手拍摄的合照"
+              width="960"
+              height="1440"
+              loading="lazy"
+              decoding="async"
+            />
+            <figcaption><span>RECORD 03</span>牵住了，就不打算松开。</figcaption>
+          </figure>
+          </div>
+          <div class="photo-deck__controls">
+            <button id="photo-prev" type="button" aria-label="查看上一张照片">←</button>
+            <span><strong id="photo-current">01</strong> / 03</span>
+            <button id="photo-next" type="button" aria-label="查看下一张照片">→</button>
+          </div>
+        </div>
+        <p class="photo-roll__hint" aria-hidden="true">左右滑动照片 · 轻触查看完整大图</p>
+      </section>
+
+      <section class="distance section">
+        <div class="distance__game reveal">
+          <div class="distance__map">
+          <button class="city city--beijing" type="button" data-city="北京">北京</button>
+          <button class="city city--tianjin" type="button" data-city="天津">天津</button>
+          <button class="city city--shanghai" type="button" data-city="上海">上海</button>
+          <button class="city city--nanchang" type="button" data-city="南昌">南昌</button>
+          <svg viewBox="0 0 360 320" role="presentation">
+            <path class="route-leg" d="M220 62 Q286 78 282 116" />
+            <path class="route-leg" d="M282 116 Q330 211 266 258" />
+            <path class="route-leg" d="M266 258 Q190 286 118 238" />
+            <path class="route-leg" d="M118 238 Q103 120 220 62" />
+            <g id="route-train" class="route-train" transform="translate(220 62)">
+              <circle r="13" />
+              <rect x="-7" y="-6" width="14" height="11" rx="3" />
+              <circle class="route-train__wheel" cx="-4" cy="7" r="2" />
+              <circle class="route-train__wheel" cx="4" cy="7" r="2" />
+            </g>
+          </svg>
+          <div class="distance__pulse"></div>
+          </div>
+          <div class="route-console">
+            <p class="utility">ROUTE GAME</p>
+            <strong>按故事发生顺序连接城市</strong>
+            <p id="route-message">第一站：我们最初跨越的那段距离，从北京出发。</p>
+            <div class="route-stamps" id="route-stamps" aria-label="已经连接的城市"></div>
+            <div id="route-ticket" class="route-ticket" hidden>
+              <span>LOVE RAILWAY · 1229</span>
+              <strong>北京 ⇄ 天津 ⇄ 上海 ⇄ 南昌</strong>
+              <small>终点：每一次见面</small>
+            </div>
+            <button id="route-reset" type="button">重新挑战</button>
+          </div>
+        </div>
+        <div class="distance__copy reveal">
+          <p class="utility">DISTANCE REPORT</p>
+          <h2>距离只是见面前的倒计时</h2>
+          <p>
+            从北京到天津，从海淀到石景山，从上海到南昌，再从南昌到北京。手机里存下了数不清的高铁票，也存下了同一个答案：不管有多远，我们都想见到彼此。
+          </p>
+          <blockquote>每一张车票，都是一句没有说出口的“我想你”。</blockquote>
+        </div>
+      </section>
+
+      <section class="reasons section" aria-labelledby="reasons-title">
+        <div class="section__heading reveal">
+          <p class="utility">PERSON OF INTEREST</p>
+          <h2 id="reasons-title">我喜欢你的理由</h2>
+          <p>依次点击词条，查看这位“心动嫌疑人”的全部特征。</p>
+        </div>
+        <div id="reason-cloud" class="reason-cloud reveal">
+          <button type="button">美丽</button>
+          <button type="button">善良</button>
+          <button type="button">可爱</button>
+          <button type="button">大方</button>
+          <button type="button">知性</button>
+          <button type="button">温柔</button>
+          <button type="button">温婉</button>
+          <button type="button">明艳</button>
+          <button type="button">俏丽</button>
+          <button type="button">机敏</button>
+          <button type="button">体贴</button>
+          <button type="button">聪明</button>
+          <button type="button">勇敢</button>
+          <button type="button">贤惠</button>
+          <button type="button">果敢</button>
+        </div>
+        <p id="reason-message" class="reason-message" aria-live="polite">结论：她是世界上最好的女孩子。</p>
+      </section>
+
+      <section class="nicknames section">
+        <div class="nicknames__card reveal">
+          <p class="utility">ALIAS HISTORY</p>
+          <h2>昵称演变记录</h2>
+          <div class="alias-flow" aria-label="昵称从小哥变为小胖哥">
+            <span>小哥</span><i>→</i><span>小胖哥</span><i>→</i><span>小胖</span><i>→</i><span>小猪</span>
+          </div>
+          <p>
+            我偷偷把微信备注改成“小帅哥”，你却坚定地改成“小胖猪”，最后定格成“小胖哥”。我胖了十多斤，你却越来越瘦、越来越好看。至于你说我“傻”这件事——已经从恋爱一周年持续到了今天。
+          </p>
+        </div>
+      </section>
+
+      <section class="letter section">
+        <div class="letter__envelope reveal">
+          <div class="letter__flap" aria-hidden="true"><span>♡</span></div>
+          <p class="utility">SEALED MESSAGE · 09.05</p>
+          <h2>写给丫头的一封信</h2>
+          <div id="letter-preview" class="letter__preview">
+            <p>亲爱的丫头：</p>
+            <p>
+              又陪你走到一个生日了。刚在一起时，我给你唱《爱很简单》。虽然我唱得一直不算好听，你却总爱让我再唱一遍。后来我才明白，你喜欢的也许不是我的歌声，而是那个认真唱给你听的、笨拙却真诚的我。
+            </p>
+          </div>
+          <div id="letter-full" class="letter__full" hidden>
+            <p>
+              我们的故事开始在冬夜的寒风里。那时我只是说了一句“好冷”，你就紧紧抱住了我。那个拥抱一路延伸了好多年：从学校咖啡馆聊到深夜，到第一次一起做奶油千层；从开封、洛阳的春天，到我们一波三折却依然坚定的订婚。
+            </p>
+            <p>
+              这些年，我们有过许多种距离。北京和天津、海淀和石景山、上海和南昌、南昌和北京。我的手机里买过数不清的高铁票，因为只要终点有你，再远的路都值得出发。异地让见面变得辛苦，却也一次次证明，我们从来没有因为距离放弃靠近。
+            </p>
+            <p>
+              你从叫我“小哥”，到“小胖哥”“小胖”“小猪”；我把微信备注改成“小帅哥”，你偏要改成“小胖猪”。我胖了十多斤，你却越来越瘦、越来越漂亮。你说我傻，也从恋爱一年后一直说到了今天。可如果傻是愿意一直逗你笑、一直奔向你、一直把你放在心上，那我愿意就这样傻一辈子。
+            </p>
+            <p>
+              订婚让我们的“以后”有了更清晰的模样。未来也许还会有绕路、有风雨，但我想和你一起，把每一次困难都走成新的纪念日。我还想陪你去东北吃最正宗的东北菜，给你买喜欢的 LV 包，也想完成更多现在还没有写下来的愿望。
+            </p>
+            <p>
+              生日快乐，我最美丽、善良、可爱、聪明又勇敢的丫头。谢谢你出现在我的生命里，也谢谢你愿意牵着这个有点傻的小胖哥，一起走向白头。愿你永远自在明亮，永远被爱，也永远知道：无论相隔多远，我都会向你奔来。
+            </p>
+            <p class="letter__sign">永远爱你的小胖哥<br />2026 年 9 月 5 日</p>
+          </div>
+          <button id="open-letter" class="letter__button" type="button">拆开这封信</button>
+        </div>
+      </section>
+
+      <section class="future section">
+        <div class="section__heading reveal">
+          <p class="utility">OPEN CASES</p>
+          <h2>等待一起完成的心愿</h2>
+        </div>
+        <div class="future__cards">
+          <article class="wish reveal">
+            <span>目的地：东北</span>
+            <h3>去吃一桌正宗东北菜</h3>
+            <p>在下雪的城市里牵手，认真研究锅包肉到底应该是什么味道。</p>
+          </article>
+          <article class="wish reveal">
+            <span>礼物清单：进行中</span>
+            <h3>送你一只喜欢的 LV 包</h3>
+            <p>不是为了证明什么，只因为看到漂亮的东西，就会想起漂亮的你。</p>
+          </article>
+          <article class="wish wish--blank reveal">
+            <span>留给未来</span>
+            <h3>下一条，由我们一起填写</h3>
+            <p>这份档案没有结案日期。</p>
+          </article>
+        </div>
+      </section>
+
+      <footer id="finale" class="finale is-locked">
+        <svg class="finale__constellation" viewBox="0 0 400 360" aria-hidden="true">
+          <path d="M200 308C172 281 69 207 69 121C69 56 149 36 200 99C251 36 331 56 331 121C331 207 228 281 200 308Z" />
+          <g>
+            <circle cx="69" cy="121" r="4" /><circle cx="113" cy="66" r="3" />
+            <circle cx="200" cy="99" r="5" /><circle cx="287" cy="66" r="3" />
+            <circle cx="331" cy="121" r="4" /><circle cx="302" cy="211" r="3" />
+            <circle cx="200" cy="308" r="5" /><circle cx="98" cy="211" r="3" />
+          </g>
+        </svg>
+        <div class="finale__fragments" aria-hidden="true">
+          <i data-vault-bg="./assets/photos/2021-05-20.webp"></i>
+          <i data-vault-bg="./assets/photos/2023-04-luoyang.webp"></i>
+          <i data-vault-bg="./assets/photos/2026-05-16.webp"></i>
+        </div>
+        <div id="finale-lock" class="finale__lock">
+          <span>LOCKED ENDING</span>
+          <strong>完整终章等待两条线索</strong>
+          <p id="finale-progress">蛋糕愿望未完成 · 城市旅程未完成</p>
+        </div>
+        <div class="finale__content">
+          <div class="finale__heart" aria-hidden="true">♡</div>
+          <p class="utility">CASE STATUS</p>
+          <h2>心动属实，期限永久。</h2>
+          <p>生日快乐，丫头。</p>
+          <button id="replay" type="button">从第一份证物重新查看</button>
+        </div>
+        <small>建立于 2020.12.29 · 持续更新中</small>
+      </footer>
+    </main>
+
+    <canvas id="finale-fireworks" class="finale-fireworks" aria-hidden="true"></canvas>
+
+    <aside id="music-player" class="music-player is-collapsed" aria-label="背景音乐播放器">
+      <button id="music-toggle" class="music-player__toggle" type="button" aria-label="播放《爱很简单》" aria-pressed="false">
+        <span class="music-player__disc" aria-hidden="true"><i></i></span>
+        <span id="music-action">播放</span>
+      </button>
+      <div class="music-player__body">
+        <div class="music-player__heading">
+          <div>
+            <strong>爱很简单</strong>
+            <span>陶喆 · 我们的主题曲</span>
+          </div>
+          <time id="music-time">00:00</time>
+        </div>
+        <p id="music-lyric" class="music-player__lyric">点一下播放，让回忆有声音。</p>
+        <input id="music-progress" type="range" min="0" max="1000" value="0" aria-label="音乐播放进度" />
+      </div>
+      <button id="music-collapse" class="music-player__collapse" type="button" aria-label="收起播放器">⌄</button>
+      <audio id="theme-music" preload="none" loop data-vault-audio="./assets/audio/love-is-simple.m4a"></audio>
+    </aside>
+
+    <dialog id="photo-lightbox" class="lightbox">
+      <button id="lightbox-close" type="button" aria-label="关闭大图">×</button>
+      <img id="lightbox-image" src="" alt="" />
+      <p id="lightbox-caption"></p>
+    </dialog>
+
+    <script src="./vault.js"></script>
+    <script src="./script.js"></script>
+    <script type="module" src="./experience.js"></script>
+  </body>
+</html>
