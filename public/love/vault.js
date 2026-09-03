@@ -6,8 +6,9 @@
  * with PBKDF2, never stored on the server, and the decrypted files only ever
  * exist as in-memory blob URLs.
  *
- * When assets/vault/manifest.json is missing (local development with the plain
- * files in place) the gate steps aside and every path resolves to itself.
+ * The gate only engages when the build marked the page with data-vault="on";
+ * locally, where the plain files sit next to the page, every path resolves to
+ * itself and the overlay never appears.
  */
 (() => {
   const MANIFEST_URL = "./assets/vault/manifest.json";
@@ -169,19 +170,22 @@
     },
   };
 
+  if (document.body.dataset.vault !== "on") {
+    // Unbuilt copy: the plain assets sit next to the page.
+    finishUnlock();
+    return;
+  }
+
   document.querySelectorAll("[data-vault-src]").forEach((element) => {
     element.src = PLACEHOLDER;
   });
 
   fetch(MANIFEST_URL, { cache: "no-cache" })
-    .then((response) => (response.ok ? response.json() : null))
+    .then((response) => {
+      if (!response.ok) throw new Error("vault: missing manifest");
+      return response.json();
+    })
     .then((data) => {
-      if (!data) {
-        // No vault built: the plain assets sit next to the page.
-        finishUnlock();
-        return;
-      }
-
       manifest = data;
       const remembered = sessionStorage.getItem(SESSION_KEY);
       if (remembered) {
@@ -191,5 +195,8 @@
       gate.classList.add("is-ready");
       input.focus();
     })
-    .catch(() => finishUnlock());
+    .catch(() => {
+      gate.classList.add("is-ready");
+      note.textContent = "档案索引加载失败，刷新页面再试一次。";
+    });
 })();
