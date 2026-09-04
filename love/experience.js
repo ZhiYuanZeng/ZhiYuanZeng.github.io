@@ -201,11 +201,13 @@ const candleMemories = [
   },
 ];
 
-// Four layer memories plus one per candle: the readout counts all of them.
-const totalMemories = memoryData.length + candleMemories.length;
+// The five candle visions retrace the four layers in short form and add one
+// ending of their own, so layer i and candle i are the same moment: the readout
+// counts distinct moments, and both indices land in the same set.
+const totalMemories = candleMemories.length;
 
 const updateMemoryCount = () => {
-  const found = foundCakeMemories.size + extinguishedCandles.size;
+  const found = new Set([...foundCakeMemories, ...extinguishedCandles]).size;
   cakeMemoryCount.textContent = `${found} / ${totalMemories}`;
   return found;
 };
