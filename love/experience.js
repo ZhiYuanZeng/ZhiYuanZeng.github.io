@@ -1188,7 +1188,7 @@ const initCake = () => {
   plaqueContext.fillText("生日快乐", 256, 108);
   plaqueContext.font = "600 48px 'Songti SC', serif";
   plaqueContext.fillStyle = "#ffdbe8";
-  plaqueContext.fillText("丫头 · 09.06", 256, 188);
+  plaqueContext.fillText("丫头 · 07.25", 256, 188);
   const plaqueTexture = new THREE.CanvasTexture(plaqueCanvas);
   plaqueTexture.colorSpace = THREE.SRGBColorSpace;
   const plaque = new THREE.Mesh(new THREE.BoxGeometry(1.34, 0.67, 0.06), [
