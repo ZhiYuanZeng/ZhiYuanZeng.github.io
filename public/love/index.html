@@ -49,10 +49,7 @@
       <header class="hero">
         <nav class="topbar" aria-label="档案导航">
           <span>CASE № 1229</span>
-          <button id="sound-toggle" class="sound-toggle" type="button" aria-pressed="false">
-            <span class="sound-toggle__dot"></span>
-            交互音：关
-          </button>
+          <span>2026.09.05</span>
         </nav>
 
         <div class="hero__content reveal">
@@ -113,7 +110,8 @@
             <div class="cake-counter"><span>已找到回忆</span><strong id="cake-memory-count">0 / 4</strong></div>
             <div class="candle-counter"><span>生日蜡烛</span><strong id="candle-count">5</strong></div>
           </div>
-          <nav class="cake-layer-nav" aria-label="蛋糕回忆夹层">
+          <nav id="cake-layer-nav" class="cake-layer-nav" aria-label="蛋糕回忆夹层" hidden>
+            <p class="cake-layer-nav__note">四层夹层的目录已解封，可以随时回看</p>
             <button type="button" data-cake-memory="0"><span>01</span>冬夜初吻</button>
             <button type="button" data-cake-memory="1"><span>02</span>奶油千层</button>
             <button type="button" data-cake-memory="2"><span>03</span>古城春色</button>

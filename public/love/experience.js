@@ -151,6 +151,7 @@ const cakePanelImage = document.querySelector("#cake-memory-image");
 const cakePanelDate = document.querySelector("#cake-memory-date");
 const cakePanelTitle = document.querySelector("#cake-memory-title");
 const cakePanelStory = document.querySelector("#cake-memory-story");
+const cakeLayerNav = document.querySelector("#cake-layer-nav");
 const cakeNavButtons = [...document.querySelectorAll("[data-cake-memory]")];
 const candleVision = document.querySelector("#candle-vision");
 const candleVisionImage = document.querySelector("#candle-vision-image");
@@ -601,6 +602,8 @@ const closeCandleWish = () => {
   candleWish.classList.remove("is-visible");
   candleWish.hidden = true;
   stopFireworks();
+  // The four titles are a spoiler, so the index only shows up once the fireworks are done.
+  cakeLayerNav.hidden = false;
 };
 
 candleWish.addEventListener("click", closeCandleWish);

@@ -558,36 +558,6 @@ body.is-locked #music-player {
   letter-spacing: 0.1em;
 }
 
-.sound-toggle {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 9px;
-  border: 1px solid var(--line);
-  border-radius: 99px;
-  background: rgba(255, 255, 255, 0.65);
-  cursor: pointer;
-  font-size: 0.62rem;
-  transition: border-color 0.25s, background 0.25s;
-}
-
-.sound-toggle:hover {
-  border-color: var(--hot);
-  background: #fff;
-}
-
-.sound-toggle__dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--muted);
-}
-
-.sound-toggle[aria-pressed="true"] .sound-toggle__dot {
-  background: var(--hot);
-  box-shadow: 0 0 0 4px rgba(237, 59, 135, 0.12);
-}
-
 .hero__content {
   position: relative;
   z-index: 1;
@@ -3175,6 +3145,7 @@ input:focus-visible {
   font-size: 0.95rem;
 }
 
+/* Stays hidden until every candle is out, so the four titles are not spoiled. */
 .cake-layer-nav {
   position: relative;
   z-index: 4;
@@ -3182,6 +3153,32 @@ input:focus-visible {
   margin: 0;
   grid-template-columns: repeat(2, 1fr);
   gap: 8px;
+  animation: nav-reveal 1s var(--cinema-ease) both;
+}
+
+/* An author `display` beats the UA rule behind the hidden attribute. */
+.cake-layer-nav[hidden] {
+  display: none;
+}
+
+.cake-layer-nav__note {
+  margin: 0;
+  color: var(--cyan);
+  font-family: var(--utility);
+  font-size: 0.56rem;
+  grid-column: 1 / -1;
+  letter-spacing: 0.12em;
+}
+
+@keyframes nav-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .cake-layer-nav button {

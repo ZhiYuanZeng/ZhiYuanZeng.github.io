@@ -115,7 +115,6 @@ document.querySelector("#embrace-trigger").addEventListener("click", () => {
   void embracePhoto.offsetWidth;
   embracePhoto.classList.add("is-replaying");
   emitBurst(embracePhoto, 18);
-  playEffect("heart");
 });
 
 document.querySelectorAll("[data-scroll-to]").forEach((button) => {
@@ -157,7 +156,6 @@ const updateFinaleState = () => {
       finale.classList.add("is-unlocked");
       window.setTimeout(() => {
         emitBurst(finale.querySelector(".finale__heart"), 30);
-        playEffect("finale");
       }, 1200);
     }
     finaleProgress.textContent = "全部线索已确认";
@@ -225,7 +223,6 @@ memoryStars.forEach((star) => {
     starBeam.classList.add("is-scanning");
     star.classList.add("is-scanning");
     if (!wasFound) emitBurst(star, 9);
-    if (!wasFound) playEffect("star");
     starTitle.textContent = memory.title;
     starStory.textContent = memory.story;
     starProgressBar.style.width = `${(foundMemories.size / memories.length) * 100}%`;
@@ -302,7 +299,6 @@ openLetterButton.addEventListener("click", () => {
   if (!isOpen) {
     letterFull.scrollIntoView({ behavior: "smooth", block: "nearest" });
     emitBurst(openLetterButton, 18);
-    playEffect("paper");
   }
 });
 
@@ -372,7 +368,6 @@ cityButtons.forEach((button) => {
       void button.offsetWidth;
       button.classList.add("is-wrong");
       routeMessage.textContent = `这张票暂时对不上。第 ${routeStep + 1} 站不是${selectedCity}。`;
-      playEffect("error");
       return;
     }
 
@@ -390,7 +385,6 @@ cityButtons.forEach((button) => {
     routeStamps.append(stamp);
     button.classList.add("is-visited");
     emitBurst(button, 8);
-    playEffect("station");
     routeMessage.textContent = routeHints[routeStep];
     routeStep += 1;
     routeBusy = false;
@@ -435,7 +429,6 @@ const updatePhotoDeck = (direction = 1) => {
 
 const changePhoto = (direction) => {
   if (deckAnimating) return;
-  playEffect("card");
 
   if (reduceMotion.matches) {
     activePhoto = (activePhoto + direction + photoCards.length) % photoCards.length;
@@ -526,81 +519,6 @@ zoomableImages.forEach((image) => {
 document.querySelector("#lightbox-close").addEventListener("click", () => lightbox.close());
 lightbox.addEventListener("click", (event) => {
   if (event.target === lightbox) lightbox.close();
-});
-
-const soundButton = document.querySelector("#sound-toggle");
-let audioContext;
-let soundEnabled = false;
-
-const playTone = (frequency, start, duration, volume = 0.035, type = "sine") => {
-  const oscillator = audioContext.createOscillator();
-  const gain = audioContext.createGain();
-  oscillator.type = type;
-  oscillator.frequency.setValueAtTime(frequency, start);
-  gain.gain.setValueAtTime(0.0001, start);
-  gain.gain.exponentialRampToValueAtTime(volume, start + 0.025);
-  gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
-  oscillator.connect(gain);
-  gain.connect(audioContext.destination);
-  oscillator.start(start);
-  oscillator.stop(start + duration + 0.02);
-};
-
-const playPaperSound = (start) => {
-  const duration = 0.38;
-  const buffer = audioContext.createBuffer(1, audioContext.sampleRate * duration, audioContext.sampleRate);
-  const data = buffer.getChannelData(0);
-  for (let index = 0; index < data.length; index += 1) {
-    const fade = 1 - index / data.length;
-    data[index] = (Math.random() * 2 - 1) * fade * 0.18;
-  }
-  const source = audioContext.createBufferSource();
-  const filter = audioContext.createBiquadFilter();
-  const gain = audioContext.createGain();
-  source.buffer = buffer;
-  filter.type = "bandpass";
-  filter.frequency.value = 1800;
-  filter.Q.value = 0.7;
-  gain.gain.value = 0.22;
-  source.connect(filter);
-  filter.connect(gain);
-  gain.connect(audioContext.destination);
-  source.start(start);
-};
-
-function playEffect(effect) {
-  if (!soundEnabled || !audioContext || audioContext.state !== "running") return;
-  const now = audioContext.currentTime;
-
-  if (effect === "star") {
-    playTone(659.25, now, 0.38, 0.035);
-    playTone(987.77, now + 0.07, 0.46, 0.025);
-  } else if (effect === "station") {
-    playTone(440, now, 0.2, 0.028, "triangle");
-    playTone(554.37, now + 0.12, 0.3, 0.025, "triangle");
-  } else if (effect === "error") {
-    playTone(180, now, 0.16, 0.02, "triangle");
-  } else if (effect === "paper") {
-    playPaperSound(now);
-  } else if (effect === "card") {
-    playPaperSound(now);
-  } else if (effect === "finale") {
-    [261.63, 329.63, 392, 523.25].forEach((note, index) => {
-      playTone(note, now + index * 0.08, 1.65 - index * 0.08, 0.022);
-    });
-  } else if (effect === "heart") {
-    playTone(196, now, 0.16, 0.025, "sine");
-    playTone(196, now + 0.22, 0.22, 0.03, "sine");
-  }
-}
-
-soundButton.addEventListener("click", async () => {
-  audioContext ??= new AudioContext();
-  await audioContext.resume();
-  soundEnabled = !soundEnabled;
-  soundButton.setAttribute("aria-pressed", String(soundEnabled));
-  soundButton.lastChild.textContent = soundEnabled ? " 交互音：开" : " 交互音：关";
-  if (soundEnabled) playEffect("star");
 });
 
 const musicPlayer = document.querySelector("#music-player");
