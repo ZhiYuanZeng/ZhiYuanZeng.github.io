@@ -201,10 +201,24 @@ const candleMemories = [
   },
 ];
 
+// Four layer memories plus one per candle: the readout counts all of them.
+const totalMemories = memoryData.length + candleMemories.length;
+
+const updateMemoryCount = () => {
+  const found = foundCakeMemories.size + extinguishedCandles.size;
+  cakeMemoryCount.textContent = `${found} / ${totalMemories}`;
+  return found;
+};
+
+updateMemoryCount();
+
+// Reaching this total means every candle is out too, so the wish has already happened.
+const allFoundHint = `${totalMemories} 段回忆全部找齐 · 愿望已经被星空听见了`;
+
 const showCakeMemory = (index) => {
   const memory = memoryData[index];
   foundCakeMemories.add(index);
-  cakeMemoryCount.textContent = `${foundCakeMemories.size} / ${memoryData.length}`;
+  const found = updateMemoryCount();
   cakeNavButtons[index].classList.add("is-found");
   cakePanelImage.src = vaultUrl(memory.image);
   cakePanelImage.alt = memory.alt;
@@ -214,9 +228,9 @@ const showCakeMemory = (index) => {
   cakePanel.hidden = false;
 
   if (foundCakeMemories.size === memoryData.length) {
-    baseHint = "四层回忆已集齐 · 剩下的就交给蜡烛吧";
-    cakeHint.textContent = baseHint;
     cakeStage.classList.add("memories-complete");
+    baseHint = found === totalMemories ? allFoundHint : "四层回忆已集齐 · 剩下的就交给蜡烛吧";
+    cakeHint.textContent = baseHint;
   }
 };
 
@@ -638,7 +652,7 @@ const showCandleVision = (index) => {
 
     if (allCandlesOut) {
       blowCandleButton.textContent = "蜡烛都吹灭啦";
-      baseHint = "生日愿望已经被星空听见了";
+      baseHint = updateMemoryCount() === totalMemories ? allFoundHint : "生日愿望已经被星空听见了";
       cakeHint.textContent = baseHint;
       openCandleWish();
       window.dispatchEvent(new CustomEvent("cake-complete"));
@@ -699,6 +713,7 @@ const extinguishCandle = (index) => {
   flame.userData.light.intensity = 0;
   flame.userData.wick.material.color.setHex(0x140b10);
   candleCount.textContent = String(flameMeshes.length - extinguishedCandles.size);
+  updateMemoryCount();
   if (extinguishedCandles.size === flameMeshes.length) {
     window.dispatchEvent(new CustomEvent("cake-final-candle"));
   }
