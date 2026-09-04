@@ -606,10 +606,14 @@ themeMusic.addEventListener("pause", () => {
 let musicStoppedByUser = false;
 
 // The song finishes decrypting after the gate opens, so anything that starts
-// playback has to wait for its blob URL first.
+// playback has to wait for its blob URL first. The unbuilt copy points at the
+// plain file through a <source> child instead, which leaves .src empty.
+const hasSource = () =>
+  Boolean(themeMusic.currentSrc || themeMusic.src || themeMusic.querySelector("source"));
+
 const readyToPlay = async () => {
   await window.Vault?.audioReady;
-  return Boolean(themeMusic.src);
+  return hasSource();
 };
 
 musicToggle.addEventListener("click", async () => {
@@ -620,7 +624,7 @@ musicToggle.addEventListener("click", async () => {
   if (themeMusic.paused) {
     musicStoppedByUser = false;
     themeMusic.volume = 0.52;
-    if (!themeMusic.src) musicLyric.textContent = "正在准备这首歌…";
+    if (!hasSource()) musicLyric.textContent = "正在准备这首歌…";
     if (!(await readyToPlay())) {
       musicLyric.textContent = "这首歌没能解密出来，刷新一下再试。";
       return;
