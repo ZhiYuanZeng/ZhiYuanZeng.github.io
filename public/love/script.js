@@ -605,6 +605,13 @@ themeMusic.addEventListener("pause", () => {
 
 let musicStoppedByUser = false;
 
+// The song finishes decrypting after the gate opens, so anything that starts
+// playback has to wait for its blob URL first.
+const readyToPlay = async () => {
+  await window.Vault?.audioReady;
+  return Boolean(themeMusic.src);
+};
+
 musicToggle.addEventListener("click", async () => {
   if (musicPlayer.classList.contains("is-collapsed")) {
     musicPlayer.classList.remove("is-collapsed");
@@ -613,6 +620,11 @@ musicToggle.addEventListener("click", async () => {
   if (themeMusic.paused) {
     musicStoppedByUser = false;
     themeMusic.volume = 0.52;
+    if (!themeMusic.src) musicLyric.textContent = "正在准备这首歌…";
+    if (!(await readyToPlay())) {
+      musicLyric.textContent = "这首歌没能解密出来，刷新一下再试。";
+      return;
+    }
     try {
       await themeMusic.play();
     } catch {
@@ -630,6 +642,7 @@ window.addEventListener("cake-final-candle", async () => {
   if (!themeMusic.paused || musicStoppedByUser) return;
 
   themeMusic.volume = 0;
+  if (!(await readyToPlay()) || !themeMusic.paused || musicStoppedByUser) return;
   try {
     await themeMusic.play();
   } catch {

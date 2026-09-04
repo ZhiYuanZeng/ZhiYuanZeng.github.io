@@ -14,6 +14,8 @@
   const MANIFEST_URL = "./assets/vault/manifest.json";
   const SESSION_KEY = "museum-vault-pass";
   const PLACEHOLDER = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+  // Only a built copy ships ciphertext; locally the plain files sit next to the page.
+  const SEALED = document.body.dataset.vault === "on";
 
   const gate = document.querySelector("#vault-gate");
   const form = document.querySelector("#vault-form");
@@ -26,6 +28,7 @@
   let manifest = null;
   let key = null;
   let unlocked = false;
+  let audioReady = Promise.resolve();
 
   const normalize = (path) => String(path).replace(/^\.?\//, "");
 
@@ -56,6 +59,16 @@
     return URL.createObjectURL(new Blob([plain], { type: entry.type }));
   };
 
+  const applyAudio = () => {
+    document.querySelectorAll("[data-vault-audio]").forEach((element) => {
+      const url = resolve(element.dataset.vaultAudio);
+      // In a sealed copy an unresolved path means the song is still decrypting.
+      if (SEALED && url === element.dataset.vaultAudio) return;
+      element.src = url;
+      element.load();
+    });
+  };
+
   const applyToDocument = () => {
     document.querySelectorAll("[data-vault-src]").forEach((element) => {
       element.src = resolve(element.dataset.vaultSrc);
@@ -65,10 +78,7 @@
       element.style.backgroundImage = `url("${resolve(element.dataset.vaultBg)}")`;
     });
 
-    document.querySelectorAll("[data-vault-audio]").forEach((element) => {
-      element.src = resolve(element.dataset.vaultAudio);
-      element.load();
-    });
+    applyAudio();
   };
 
   const finishUnlock = () => {
@@ -118,15 +128,31 @@
     return true;
   };
 
+  const isAudio = (entry) => entry.type.startsWith("audio/");
+
   const decryptEverything = async () => {
     const entries = Object.entries(manifest.files);
+    // The song alone is 4 of the 5.7 MB and is not needed until it plays, so the
+    // gate opens on the photos and the audio keeps decrypting behind the page.
+    const photos = entries.filter(([, entry]) => !isAudio(entry));
+    const audio = entries.filter(([, entry]) => isAudio(entry));
     let done = 0;
 
+    audioReady = Promise.all(
+      audio.map(async ([path, entry]) => {
+        urls.set(normalize(path), await decryptFile(entry));
+      }),
+    )
+      .then(() => {
+        if (unlocked) applyAudio();
+      })
+      .catch(() => {});
+
     await Promise.all(
-      entries.map(async ([path, entry]) => {
+      photos.map(async ([path, entry]) => {
         urls.set(normalize(path), await decryptFile(entry));
         done += 1;
-        note.textContent = `正在解密回忆… ${done} / ${entries.length}`;
+        note.textContent = `正在解密回忆… ${done} / ${photos.length}`;
       }),
     );
   };
@@ -173,14 +199,17 @@
     get isUnlocked() {
       return unlocked;
     },
+    // Resolves once the song has been decrypted; never rejects.
+    get audioReady() {
+      return audioReady;
+    },
     whenUnlocked(callback) {
       if (unlocked) callback();
       else waiting.push(callback);
     },
   };
 
-  if (document.body.dataset.vault !== "on") {
-    // Unbuilt copy: the plain assets sit next to the page.
+  if (!SEALED) {
     finishUnlock();
     return;
   }
