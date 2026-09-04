@@ -127,11 +127,11 @@ const countdown = document.querySelector("#countdown");
 
 const updateCountdown = () => {
   const now = new Date();
-  let birthday = new Date(now.getFullYear(), 8, 5);
+  let birthday = new Date(now.getFullYear(), 8, 6);
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
   if (today > birthday) {
-    birthday = new Date(now.getFullYear() + 1, 8, 5);
+    birthday = new Date(now.getFullYear() + 1, 8, 6);
   }
 
   const days = Math.round((birthday - today) / 86_400_000);
