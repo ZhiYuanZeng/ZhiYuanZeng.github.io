@@ -21,19 +21,19 @@
 
   const META = {
     stack: {
-      title: "奶油千层叠叠乐",
-      tip: "在最稳的一刻落层！完美对齐会掉草莓加分，切到太窄就倒塔。",
-      help: "点击画布 / 空格落层 · 越叠越快，对准中间最甜",
+      title: "520·DIY 奶油千层",
+      tip: "还原那天一起做的蛋糕：每一层都是真实配方，叠稳才写进回忆。",
+      help: "点击 / 空格落层 · 完美对齐会记下那一层的故事",
     },
     catch: {
       title: "异地车票接接乐",
       tip: "三车道接车票。连击进入「奔赴狂热」后分数翻倍！",
       help: "←→ / A D / 鼠标切换车道 · 躲开加班堵车拖延",
     },
-    blow: {
-      title: "吹蜡烛大作战",
-      tip: "按住蓄力，松手吹气。蓄得越满，能吹灭的烛火越多。",
-      help: "按住空格或按住鼠标蓄力，松开吹气 · 顽固蜡烛要大力",
+    hug: {
+      title: "冬夜好冷·抱抱取暖",
+      tip: "那天他说「好冷」，你紧紧抱住了他。按住取暖，松手回血，别让寒风冻住这一晚。",
+      help: "按住空格或鼠标拥抱取暖 · 体力会耗尽，松手恢复 · 扛过寒潮攒「好暖」",
     },
   };
 
@@ -241,7 +241,7 @@
   function renderHallStats() {
     playCountEl.textContent = String(stats.plays || 0);
     bestComboEl.textContent = String(stats.bestCombo || 0);
-    const cleared = ["stack", "catch", "blow"].filter((id) => stats[`clear_${id}`]).length;
+    const cleared = ["stack", "catch", "hug"].filter((id) => stats[`clear_${id}`] || (id === "hug" && stats.clear_blow)).length;
     clearCountEl.textContent = String(cleared);
   }
 
@@ -366,10 +366,21 @@
     ctx.fillText(sub, W / 2, H / 2 + 28);
   }
 
-  // ========== STACK ==========
+  // ========== STACK (520 DIY recipe) ==========
   const Stack = (() => {
-    const TARGET = 10;
-    const colors = ["#e85a95", "#ff9ec0", "#f0c894", "#ff7eb6", "#ffc2d8", "#f6a5c8"];
+    const RECIPE = [
+      { name: "一层笨拙", note: "手有点抖，笑容却很真", color: "#e85a95" },
+      { name: "一层认真", note: "你盯着裱花袋，像在完成一件大事", color: "#ff9ec0" },
+      { name: "好多喜欢", note: "世界上独一份的配方", color: "#f0c894" },
+      { name: "520 糖霜", note: "第一次一起过的节日味道", color: "#ff7eb6" },
+      { name: "DIY 奶油", note: "不够标准，却刚刚好", color: "#ffc2d8" },
+      { name: "咖啡馆余温", note: "从冬夜聊到深夜的那种甜", color: "#f6a5c8" },
+      { name: "丫头的微笑", note: "比任何裱花都好看", color: "#ff8fb8" },
+      { name: "小胖哥的傻气", note: "愿意一直逗你笑", color: "#ffb4c8" },
+      { name: "紧紧抱住", note: "从那句「好冷」开始延伸", color: "#e85a95" },
+      { name: "永远爱你", note: "这只蛋糕，只为丫头", color: "#ff6a88" },
+    ];
+    const TARGET = RECIPE.length;
     let layers = [];
     let current = null;
     let crumbs = [];
@@ -378,19 +389,26 @@
     let bounce = 0;
     let guidePulse = 0;
 
-    const makeLayer = (y, width, x) => ({
-      x: x ?? (W - width) / 2,
-      y,
-      w: width,
-      h: 38,
-      color: colors[layers.length % colors.length],
-      berry: false,
-      land: 0,
-    });
+    const makeLayer = (y, width, x, index = 0) => {
+      const recipe = RECIPE[Math.min(index, RECIPE.length - 1)];
+      return {
+        x: x ?? (W - width) / 2,
+        y,
+        w: width,
+        h: 38,
+        color: recipe.color,
+        name: recipe.name,
+        note: recipe.note,
+        berry: false,
+        land: 0,
+      };
+    };
 
     const reset = () => {
-      layers = [makeLayer(H - 78, 240)];
-      current = makeLayer(H - 78 - 46, 240, 30);
+      layers = [makeLayer(H - 78, 240, undefined, 0)];
+      layers[0].name = "烤盘底";
+      layers[0].note = "DIY 蛋糕店的起点";
+      current = makeLayer(H - 78 - 46, 240, 30, 0);
       crumbs = [];
       dir = 1;
       speed = 3.6;
@@ -408,11 +426,11 @@
         burst(current.x + current.w / 2, current.y, "#ffb4c8", 20);
         punch(14);
         blip(110, 0.18, "sawtooth", 0.06);
+        tip.textContent = "配方塌了…再一起做一次吧";
         endGame(false);
         return;
       }
 
-      // falling overhang crumbs
       if (current.x < left) {
         crumbs.push({ x: current.x, y: current.y, w: left - current.x, vy: 0, life: 1, color: current.color });
       }
@@ -427,6 +445,8 @@
         });
       }
 
+      const recipeIndex = layers.length - 1;
+      const recipe = RECIPE[Math.min(recipeIndex, RECIPE.length - 1)];
       const ratio = overlap / prev.w;
       const trimmed = {
         ...current,
@@ -435,42 +455,48 @@
         y: prev.y - 42,
         land: 1,
         berry: ratio > 0.92,
+        name: recipe.name,
+        note: recipe.note,
+        color: recipe.color,
       };
       layers.push(trimmed);
       bounce = 1;
 
       if (ratio > 0.92) {
         bumpCombo(2);
-        addScore(180 + combo * 12, trimmed.x + trimmed.w / 2, trimmed.y, "完美 +草莓");
-        tip.textContent = "完美对齐！奶油塔稳到发光";
+        addScore(180 + combo * 12, trimmed.x + trimmed.w / 2, trimmed.y, recipe.name);
+        tip.textContent = `完美！记下「${recipe.name}」——${recipe.note}`;
         burst(trimmed.x + trimmed.w / 2, trimmed.y, "#ffd84d", 16);
         burst(trimmed.x + trimmed.w / 2, trimmed.y, "#ff7eb6", 10);
         punch(5);
         flashScreen(0.12);
         blip(760, 0.07, "square");
         blip(980, 0.09, "triangle", 0.035);
+        showBanner(recipe.name, "#ffd84d");
       } else if (ratio > 0.62) {
         bumpCombo(1);
-        addScore(90 + combo * 6, trimmed.x + trimmed.w / 2, trimmed.y, "不错");
-        tip.textContent = `第 ${layers.length - 1} 层落稳了 · 目标 ${TARGET} 层`;
+        addScore(90 + combo * 6, trimmed.x + trimmed.w / 2, trimmed.y, recipe.name);
+        tip.textContent = `第 ${layers.length - 1} 层「${recipe.name}」落稳了`;
         burst(trimmed.x + trimmed.w / 2, trimmed.y + 10, trimmed.color, 8);
         blip(520 + combo * 30, 0.05, "triangle");
       } else {
         resetCombo();
         setHud();
         addScore(40, trimmed.x + trimmed.w / 2, trimmed.y, "惊险");
-        tip.textContent = "差一点就塌！对准中间再试";
+        tip.textContent = `「${recipe.name}」差点塌掉，对准中间再试`;
         punch(8);
         blip(180, 0.08, "sawtooth");
       }
 
       if (layers.length - 1 >= TARGET) {
+        tip.textContent = "独一份配方完成！只为丫头的 520";
         endGame(true);
         return;
       }
 
       speed = Math.min(8.2, 3.6 + (layers.length - 1) * 0.35);
-      current = makeLayer(trimmed.y - 46, trimmed.w, dir > 0 ? 24 : W - trimmed.w - 24);
+      const nextIdx = layers.length - 1;
+      current = makeLayer(trimmed.y - 46, trimmed.w, dir > 0 ? 24 : W - trimmed.w - 24, nextIdx);
     };
 
     const update = (dt) => {
@@ -494,14 +520,12 @@
 
     const drawCakeLayer = (g, layer, yOffset = 0) => {
       const y = layer.y + yOffset + layer.land * -6;
-      // side shadow
       g.fillStyle = "rgba(0,0,0,0.18)";
       roundRect(g, layer.x + 4, y + 6, layer.w, layer.h, 10);
       g.fill();
       g.fillStyle = layer.color;
       roundRect(g, layer.x, y, layer.w, layer.h, 10);
       g.fill();
-      // cream swirl
       g.fillStyle = "rgba(255,255,255,0.55)";
       roundRect(g, layer.x + 10, y + 7, layer.w - 20, 11, 6);
       g.fill();
@@ -513,6 +537,12 @@
       g.stroke();
       g.fillStyle = "rgba(90,20,50,0.12)";
       g.fillRect(layer.x + 4, y + layer.h - 8, layer.w - 8, 5);
+      if (layer.name && layer.w > 90) {
+        g.fillStyle = "rgba(90,20,50,0.75)";
+        g.font = "bold 11px Songti SC, serif";
+        g.textAlign = "center";
+        g.fillText(layer.name, layer.x + layer.w / 2, y + 24);
+      }
       if (layer.berry) {
         g.fillStyle = "#e11d48";
         g.beginPath();
@@ -520,7 +550,6 @@
         g.fill();
         g.fillStyle = "#22c55e";
         g.fillRect(layer.x + layer.w / 2 - 1, y - 14, 3, 8);
-        // sparkle
         g.fillStyle = "#ffd84d";
         g.beginPath();
         g.arc(layer.x + layer.w / 2 + 10, y - 8, 2, 0, Math.PI * 2);
@@ -536,7 +565,15 @@
       g.fillRect(0, 0, W, H);
       drawStars(g, "rgba(255,200,220,0.4)");
 
-      // plate
+      // DIY shop cue
+      g.fillStyle = "rgba(255,216,77,0.12)";
+      roundRect(g, W / 2 - 150, 12, 300, 36, 12);
+      g.fill();
+      g.fillStyle = "#ffd84d";
+      g.font = "bold 14px Songti SC, serif";
+      g.textAlign = "center";
+      g.fillText("520 · DIY 蛋糕店 · 独一份配方", W / 2, 36);
+
       g.fillStyle = "#fff6fa";
       g.beginPath();
       g.ellipse(W / 2, H - 42, 160, 18, 0, 0, Math.PI * 2);
@@ -549,7 +586,6 @@
       const yBounce = bounce * Math.sin(bounce * Math.PI) * 8;
       layers.forEach((layer) => drawCakeLayer(g, layer, yBounce));
 
-      // ghost guide under moving piece
       if (current && layers.length) {
         const prev = layers[layers.length - 1];
         g.strokeStyle = `rgba(255,216,77,${0.25 + Math.sin(guidePulse) * 0.2})`;
@@ -560,6 +596,10 @@
         g.strokeStyle = "#ffd84d";
         g.lineWidth = 2;
         g.strokeRect(current.x - 1, current.y - 1, current.w + 2, current.h + 2);
+        g.fillStyle = "#ffe7f1";
+        g.font = "12px sans-serif";
+        g.textAlign = "center";
+        g.fillText(current.name || "", current.x + current.w / 2, current.y - 10);
       }
 
       crumbs.forEach((c) => {
@@ -572,8 +612,8 @@
       g.fillStyle = "#ffd84d";
       g.font = "bold 16px SFMono-Regular, monospace";
       g.textAlign = "left";
-      g.fillText(`层数 ${Math.max(0, layers.length - 1)} / ${TARGET}`, 22, 30);
-      g.fillText(`速度 ×${speed.toFixed(1)}`, 22, 52);
+      g.fillText(`配方 ${Math.max(0, layers.length - 1)} / ${TARGET}`, 22, 70);
+      g.fillText(`速度 ×${speed.toFixed(1)}`, 22, 92);
     };
 
     return { reset, update, draw, drop };
@@ -861,228 +901,300 @@
     return { reset, update, draw, moveLane, pointerToLane };
   })();
 
-  // ========== BLOW (charge wind) ==========
-  const Blow = (() => {
-    let candles = [];
-    let timeLeft = 16;
-    let charge = 0;
-    let charging = false;
-    let gusts = [];
-    let smoke = [];
+  // ========== HUG (winter warm) ==========
+  const Hug = (() => {
+    const GOAL = 7;
+    let chill = 35;
+    let stamina = 100;
+    let hugging = false;
+    let warm = 0;
+    let wind = 0;
+    let windCd = 2.5;
+    let snow = [];
+    let hearts = [];
+    let bob = 0;
+    let speech = { text: "好冷…", life: 0 };
+    let needHug = false;
+    let hugPulse = 0;
+    let savedFromWind = false;
 
     const reset = () => {
-      candles = Array.from({ length: 5 }, (_, index) => ({
-        x: 150 + index * 150,
-        y: H * 0.58,
-        lit: true,
-        stubborn: index === 1 || index === 3,
-        lean: 0,
-        reignite: 0,
-        wobble: Math.random() * 10,
+      chill = 35;
+      stamina = 100;
+      hugging = false;
+      warm = 0;
+      wind = 0;
+      windCd = 2.2;
+      bob = 0;
+      hugPulse = 0;
+      needHug = false;
+      savedFromWind = false;
+      speech = { text: "好冷…", life: 1.6 };
+      snow = Array.from({ length: 46 }, () => ({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        s: 1.2 + Math.random() * 2.4,
+        vy: 28 + Math.random() * 40,
+        vx: -12 + Math.random() * 24,
       }));
-      timeLeft = 16;
-      charge = 0;
-      charging = false;
-      gusts = [];
-      smoke = [];
+      hearts = [];
     };
 
-    const setCharging = (on) => {
-      charging = on && running;
-      if (!on && charge > 0.12 && running) release();
+    const setHugging = (on) => {
+      if (!running) return;
+      if (on && stamina < 6) {
+        tip.textContent = "体力空了，先松手回血再抱";
+        blip(160, 0.06, "sawtooth", 0.04);
+        return;
+      }
+      hugging = on && stamina > 0;
+      if (hugging) {
+        speech = { text: "我抱着你", life: 1.2 };
+        blip(420, 0.05, "sine", 0.03);
+      }
     };
 
-    const release = () => {
-      const power = charge;
-      charge = 0;
-      charging = false;
-      punch(4 + power * 10);
-      gusts.push({ life: 0.55, power, x: W / 2, y: H - 40 });
-      flashScreen(0.08 + power * 0.15);
-      blip(220 + power * 400, 0.12, "sine", 0.05);
-
-      let blown = 0;
-      candles.forEach((c, index) => {
-        if (!c.lit) return;
-        const need = c.stubborn ? 0.55 : 0.28;
-        // stronger blow reaches more candles / stubborn ones
-        const reach = power > 0.75 ? true : Math.abs(index - 2) <= (power > 0.45 ? 2 : 1);
-        if (reach && power >= need) {
-          c.lit = false;
-          blown += 1;
-          bumpCombo(1);
-          addScore(100 + Math.floor(power * 80) + combo * 10, c.x, c.y - 90, c.stubborn ? "顽固灭了" : "呼—");
-          burst(c.x, c.y - 90, "#9ca3af", 10);
-          burst(c.x, c.y - 90, "#ffd84d", 6);
-          for (let i = 0; i < 6; i += 1) {
-            smoke.push({
-              x: c.x + (Math.random() - 0.5) * 10,
-              y: c.y - 90,
-              vy: -20 - Math.random() * 20,
-              life: 0.8,
-            });
-          }
-        } else if (reach) {
-          c.lean = 0.9;
-          tip.textContent = c.stubborn ? "这根比较顽固，再蓄久一点" : "风不够大，再蓄力！";
-        }
-      });
-
-      if (blown > 0) tip.textContent = blown > 1 ? `一口气吹灭 ${blown} 根！` : "吹灭了一根";
-      if (candles.every((c) => !c.lit)) endGame(true);
+    const grantWarm = () => {
+      warm += 1;
+      bumpCombo(1);
+      addScore(140 + combo * 15, W / 2, H * 0.42, "好暖");
+      burst(W / 2, H * 0.5, "#ff7eb6", 16);
+      burst(W / 2, H * 0.5, "#ffd84d", 10);
+      punch(5);
+      flashScreen(0.1);
+      blip(720, 0.08, "triangle");
+      showBanner(warm >= GOAL ? "这一晚被你暖住了" : `好暖 ×${warm}`, "#ffb4c8");
+      tip.textContent = warm >= GOAL
+        ? "从那句「好冷」开始的拥抱，一路延伸到今天"
+        : `记下第 ${warm} 次「好暖」· 目标 ${GOAL}`;
+      for (let i = 0; i < 5; i += 1) {
+        hearts.push({
+          x: W / 2 + (Math.random() - 0.5) * 80,
+          y: H * 0.48,
+          vy: -40 - Math.random() * 30,
+          life: 1,
+        });
+      }
+      if (warm >= GOAL) endGame(true);
     };
 
     const update = (dt) => {
-      timeLeft -= dt;
-      if (charging) charge = Math.min(1, charge + dt * 0.85);
-      candles.forEach((c) => {
-        c.wobble += dt * 7;
-        c.lean = Math.max(0, c.lean - dt * 1.8);
-        // rare reignite tease when almost done? skip for fairness
-      });
-      gusts = gusts.filter((g) => {
-        g.life -= dt;
-        return g.life > 0;
-      });
-      smoke = smoke.filter((s) => {
-        s.y += s.vy * dt;
-        s.life -= dt;
-        return s.life > 0;
-      });
-      if (timeLeft <= 0) {
-        timeLeft = 0;
-        endGame(candles.every((c) => !c.lit));
+      bob += dt * 5;
+      hugPulse = Math.max(0, hugPulse - dt);
+      wind = Math.max(0, wind - dt);
+      windCd -= dt;
+      speech.life = Math.max(0, speech.life - dt);
+
+      if (windCd <= 0) {
+        wind = 1.8 + Math.random() * 0.7;
+        windCd = 3.4 + Math.random() * 1.6;
+        chill = Math.min(100, chill + 18 + Math.random() * 10);
+        needHug = true;
+        savedFromWind = false;
+        speech = { text: Math.random() > 0.5 ? "好冷！" : "风好大…", life: 1.4 };
+        tip.textContent = "寒潮来了！按住抱抱，把寒意压下去";
+        punch(6);
+        blip(180, 0.1, "sawtooth", 0.045);
       }
+
+      const windBoost = wind > 0 ? 24 : 11;
+      if (hugging && stamina > 0) {
+        stamina = Math.max(0, stamina - 26 * dt);
+        chill = Math.max(0, chill - (42 + (wind > 0 ? 14 : 0)) * dt);
+        hugPulse = 0.5;
+        if (stamina <= 0) {
+          hugging = false;
+          tip.textContent = "抱抱太久也累，松手喘口气";
+        }
+        if (needHug && !savedFromWind && chill <= 42) {
+          savedFromWind = true;
+          needHug = false;
+          grantWarm();
+        }
+        if (Math.random() < dt * 4) {
+          hearts.push({
+            x: W / 2 + (Math.random() - 0.5) * 40,
+            y: H * 0.55,
+            vy: -50,
+            life: 0.7,
+          });
+        }
+      } else {
+        hugging = false;
+        stamina = Math.min(100, stamina + 24 * dt);
+        chill = Math.min(100, chill + windBoost * dt);
+      }
+
+      snow.forEach((f) => {
+        f.y += f.vy * dt;
+        f.x += f.vx * dt + (wind > 0 ? -60 * dt : 0);
+        if (f.y > H) {
+          f.y = -6;
+          f.x = Math.random() * W;
+        }
+        if (f.x < -10) f.x = W + 5;
+        if (f.x > W + 10) f.x = -5;
+      });
+      hearts = hearts.filter((h) => {
+        h.y += h.vy * dt;
+        h.life -= dt;
+        return h.life > 0;
+      });
+
+      if (chill >= 100) {
+        chill = 100;
+        tip.textContent = "这一晚太冷了…再抱紧一点试试";
+        endGame(false);
+      }
+    };
+
+    const drawPerson = (g, x, y, opts) => {
+      const { coat, hair, label, shiver } = opts;
+      const sx = shiver ? Math.sin(bob * 18) * 2.5 : 0;
+      g.save();
+      g.translate(x + sx, y);
+      // legs
+      g.fillStyle = "#2a2030";
+      g.fillRect(-12, 48, 10, 28);
+      g.fillRect(4, 48, 10, 28);
+      // body
+      g.fillStyle = coat;
+      roundRect(g, -22, 8, 44, 48, 14);
+      g.fill();
+      // head
+      g.fillStyle = "#f3c7a5";
+      g.beginPath();
+      g.arc(0, 0, 18, 0, Math.PI * 2);
+      g.fill();
+      g.fillStyle = hair;
+      g.beginPath();
+      g.ellipse(0, -10, 18, 12, 0, Math.PI, 0);
+      g.fill();
+      g.fillStyle = "#2a1200";
+      g.beginPath();
+      g.arc(-6, 0, 2.2, 0, Math.PI * 2);
+      g.arc(6, 0, 2.2, 0, Math.PI * 2);
+      g.fill();
+      if (shiver) {
+        g.strokeStyle = "#5b8def";
+        g.lineWidth = 2;
+        g.beginPath();
+        g.moveTo(16, -8);
+        g.lineTo(24, -14);
+        g.moveTo(16, 0);
+        g.lineTo(26, -2);
+        g.stroke();
+      }
+      g.fillStyle = "#fff";
+      g.font = "bold 12px sans-serif";
+      g.textAlign = "center";
+      g.fillText(label, 0, 92);
+      g.restore();
     };
 
     const draw = (g) => {
       const grad = g.createLinearGradient(0, 0, 0, H);
-      grad.addColorStop(0, "#120814");
-      grad.addColorStop(1, "#3a1632");
+      grad.addColorStop(0, "#0b1730");
+      grad.addColorStop(1, hugging ? "#3a2048" : "#152238");
       g.fillStyle = grad;
       g.fillRect(0, 0, W, H);
-      drawStars(g);
 
-      // table
-      g.fillStyle = "#4a2a20";
-      g.fillRect(0, H * 0.78, W, H * 0.22);
-      g.fillStyle = "#6b3d2e";
-      g.fillRect(0, H * 0.78, W, 14);
+      // cafe
+      g.fillStyle = "#1a2233";
+      g.fillRect(60, H * 0.38, 220, H * 0.4);
+      g.fillStyle = "#f6c76e";
+      g.globalAlpha = 0.35 + (hugging ? 0.25 : 0);
+      g.fillRect(90, H * 0.46, 70, 50);
+      g.fillRect(180, H * 0.46, 70, 50);
+      g.globalAlpha = 1;
+      g.fillStyle = "#2a3144";
+      g.fillRect(0, H * 0.76, W, H * 0.24);
+      g.fillStyle = "#3a455c";
+      g.fillRect(0, H * 0.76, W, 10);
 
-      // cake body
-      g.fillStyle = "#f3d2a8";
-      roundRect(g, 120, H * 0.6, W - 240, 110, 20);
-      g.fill();
-      g.fillStyle = "#ff9ec0";
-      roundRect(g, 170, H * 0.5, W - 340, 90, 18);
-      g.fill();
-      g.fillStyle = "rgba(255,255,255,0.55)";
-      roundRect(g, 190, H * 0.53, W - 380, 18, 9);
-      g.fill();
-      // strawberries on cake
-      for (let i = 0; i < 5; i += 1) {
-        const sx = 220 + i * 110;
-        g.fillStyle = "#e11d48";
+      snow.forEach((f) => {
+        g.fillStyle = "rgba(255,255,255,0.75)";
         g.beginPath();
-        g.arc(sx, H * 0.52, 8, 0, Math.PI * 2);
+        g.arc(f.x, f.y, f.s, 0, Math.PI * 2);
         g.fill();
-        g.fillStyle = "#22c55e";
-        g.fillRect(sx - 1, H * 0.52 - 14, 3, 7);
-      }
-
-      candles.forEach((c, index) => {
-        const lean = Math.sin(c.wobble) * 2 + c.lean * 10;
-        g.save();
-        g.translate(c.x + lean, 0);
-        // candle body
-        const body = g.createLinearGradient(-10, c.y - 90, 10, c.y);
-        body.addColorStop(0, "#fffaf5");
-        body.addColorStop(1, c.stubborn ? "#e9d5ff" : "#d8f5f3");
-        g.fillStyle = body;
-        roundRect(g, -10, c.y - 90, 20, 96, 6);
-        g.fill();
-        g.fillStyle = c.stubborn ? "#a855f7" : "#2dd4bf";
-        g.fillRect(-10, c.y - 52, 20, 8);
-        // wick
-        g.strokeStyle = "#444";
-        g.lineWidth = 2;
-        g.beginPath();
-        g.moveTo(0, c.y - 90);
-        g.lineTo(0, c.y - 102);
-        g.stroke();
-        if (c.lit) {
-          const flicker = Math.sin(c.wobble * 1.7) * 3;
-          // glow
-          g.fillStyle = "rgba(255,180,40,0.25)";
-          g.beginPath();
-          g.arc(flicker * 0.2, c.y - 118, 22, 0, Math.PI * 2);
-          g.fill();
-          g.fillStyle = "#ffd84d";
-          g.beginPath();
-          g.moveTo(0, c.y - 102);
-          g.quadraticCurveTo(12 + flicker, c.y - 122, 0, c.y - 138);
-          g.quadraticCurveTo(-12 - flicker, c.y - 122, 0, c.y - 102);
-          g.fill();
-          g.fillStyle = "#ff6a00";
-          g.beginPath();
-          g.moveTo(0, c.y - 104);
-          g.quadraticCurveTo(6, c.y - 116, 0, c.y - 126);
-          g.quadraticCurveTo(-6, c.y - 116, 0, c.y - 104);
-          g.fill();
-          if (c.stubborn) {
-            g.fillStyle = "#e9d5ff";
-            g.font = "bold 11px sans-serif";
-            g.textAlign = "center";
-            g.fillText("顽固", 0, c.y - 148);
-          }
-        }
-        g.restore();
-        g.fillStyle = "#ffd84d";
-        g.font = "12px monospace";
-        g.textAlign = "center";
-        g.fillText(String(index + 1), c.x, c.y + 28);
       });
 
-      smoke.forEach((s) => {
-        g.globalAlpha = Math.max(0, s.life);
-        g.fillStyle = "#9ca3af";
+      const mid = W / 2;
+      const baseY = H * 0.58;
+      if (hugging) {
+        // shared glow
+        g.fillStyle = `rgba(255,150,180,${0.15 + hugPulse * 0.25})`;
         g.beginPath();
-        g.arc(s.x, s.y, 8 + (1 - s.life) * 6, 0, Math.PI * 2);
+        g.ellipse(mid, baseY + 20, 110, 70, 0, 0, Math.PI * 2);
         g.fill();
+        drawPerson(g, mid - 18, baseY, { coat: "#e85a95", hair: "#3b2218", label: "丫头", shiver: false });
+        drawPerson(g, mid + 22, baseY, { coat: "#ffb703", hair: "#2a1810", label: "小胖哥", shiver: false });
+        // arms wrap cue
+        g.strokeStyle = "rgba(255,216,77,0.7)";
+        g.lineWidth = 4;
+        g.beginPath();
+        g.arc(mid, baseY + 28, 48, 0.15 * Math.PI, 0.85 * Math.PI);
+        g.stroke();
+      } else {
+        drawPerson(g, mid - 70, baseY, { coat: "#e85a95", hair: "#3b2218", label: "丫头", shiver: false });
+        drawPerson(g, mid + 70, baseY, { coat: "#ffb703", hair: "#2a1810", label: "小胖哥", shiver: true });
+      }
+
+      hearts.forEach((h) => {
+        g.globalAlpha = Math.max(0, h.life);
+        g.fillStyle = "#ff7eb6";
+        g.font = "18px sans-serif";
+        g.textAlign = "center";
+        g.fillText("♥", h.x, h.y);
       });
       g.globalAlpha = 1;
 
-      gusts.forEach((gust) => {
-        g.strokeStyle = `rgba(141,229,225,${gust.life})`;
-        g.lineWidth = 3 + gust.power * 8;
-        g.beginPath();
-        g.ellipse(W / 2, H - 30, 80 + (1 - gust.life) * 200, 30 + gust.power * 40, 0, Math.PI, 0);
-        g.stroke();
-      });
+      if (speech.life > 0) {
+        const sx = hugging ? mid + 40 : mid + 100;
+        g.fillStyle = "rgba(255,255,255,0.92)";
+        roundRect(g, sx - 40, baseY - 70, 80, 32, 10);
+        g.fill();
+        g.fillStyle = "#5d1738";
+        g.font = "bold 14px Songti SC, serif";
+        g.textAlign = "center";
+        g.fillText(speech.text, sx, baseY - 48);
+      }
 
-      // charge meter
-      g.fillStyle = "rgba(0,0,0,0.35)";
-      roundRect(g, W / 2 - 130, H - 42, 260, 24, 12);
-      g.fill();
-      g.fillStyle = charge > 0.55 ? "#c084fc" : "#8de5e1";
-      roundRect(g, W / 2 - 126, H - 38, 252 * charge, 16, 8);
-      g.fill();
-      g.fillStyle = "#ffd84d";
-      g.font = "bold 13px sans-serif";
-      g.textAlign = "center";
-      g.fillText(charge > 0.55 ? "大力吹！" : "蓄力条", W / 2, H - 26);
-
+      // meters
+      const drawMeter = (x, y, w, value, color, label) => {
+        g.fillStyle = "rgba(0,0,0,0.35)";
+        roundRect(g, x, y, w, 18, 9);
+        g.fill();
+        g.fillStyle = color;
+        roundRect(g, x + 2, y + 2, Math.max(0, (w - 4) * (value / 100)), 14, 7);
+        g.fill();
+        g.fillStyle = "#ffd84d";
+        g.font = "bold 12px sans-serif";
+        g.textAlign = "left";
+        g.fillText(label, x, y - 6);
+      };
+      drawMeter(24, 48, 220, chill, chill > 70 ? "#5b8def" : "#8ec5ff", `寒意 ${Math.floor(chill)}`);
+      drawMeter(24, 92, 220, stamina, "#ffb703", `体力 ${Math.floor(stamina)}`);
       g.fillStyle = "#ffd84d";
       g.font = "bold 16px SFMono-Regular, monospace";
       g.textAlign = "left";
-      g.fillText(`倒计时 ${timeLeft.toFixed(1)}s`, 20, 30);
-      g.fillText(charging ? "蓄力中…" : "按住蓄力，松手吹气", 20, 54);
+      g.fillText(`好暖 ${warm} / ${GOAL}`, 24, 140);
+      if (wind > 0) {
+        g.fillStyle = "#8ec5ff";
+        g.font = "bold 18px Songti SC, serif";
+        g.fillText("寒潮中！快抱抱", 24, 168);
+      }
+      g.fillStyle = "#ffe7f1";
+      g.font = "13px sans-serif";
+      g.textAlign = "center";
+      g.fillText(hugging ? "紧紧抱住中…" : "按住拥抱 · 松手恢复体力", W / 2, H - 24);
     };
 
-    return { reset, update, draw, setCharging };
+    return { reset, update, draw, setHugging };
   })();
 
-  const Games = { stack: Stack, catch: Catch, blow: Blow };
+  const Games = { stack: Stack, catch: Catch, hug: Hug };
+
 
   function canvasPos(event) {
     const rect = canvas.getBoundingClientRect();
@@ -1110,7 +1222,7 @@
     if (!running) return;
     if (active === "stack") Stack.drop();
     if (active === "catch") Catch.pointerToLane(x);
-    if (active === "blow") Blow.setCharging(true);
+    if (active === "hug") Hug.setHugging(true);
   });
 
   canvas.addEventListener("pointermove", (event) => {
@@ -1122,10 +1234,10 @@
 
   canvas.addEventListener("pointerup", () => {
     pointerDown = false;
-    if (active === "blow" && running) Blow.setCharging(false);
+    if (active === "hug" && running) Hug.setHugging(false);
   });
   canvas.addEventListener("pointerleave", () => {
-    if (active === "blow" && running && pointerDown) Blow.setCharging(false);
+    if (active === "hug" && running && pointerDown) Hug.setHugging(false);
     pointerDown = false;
   });
 
@@ -1146,22 +1258,26 @@
       event.preventDefault();
       if (mode === "ready" || mode === "over" || mode === "clear") startOrRetry();
       else if (active === "stack" && running) Stack.drop();
-      else if (active === "blow" && running) Blow.setCharging(true);
+      else if (active === "hug" && running) Hug.setHugging(true);
     }
   });
 
   window.addEventListener("keyup", (event) => {
     keys.delete(event.key);
-    if (event.code === "Space" && active === "blow" && running) Blow.setCharging(false);
+    if (event.code === "Space" && active === "hug" && running) Hug.setHugging(false);
   });
 
   // Update hall card copy to match new mechanics
   const stackCard = document.querySelector('[data-game="stack"] em');
   const catchCard = document.querySelector('[data-game="catch"] em');
-  const blowCard = document.querySelector('[data-game="blow"] em');
-  if (stackCard) stackCard.textContent = "完美对齐掉草莓，切歪就塌塔，越叠越刺激";
+  const hugCard = document.querySelector('[data-game="hug"] em');
+  const hugTitle = document.querySelector('[data-game="hug"] strong');
+  if (stackCard) stackCard.textContent = "每一层都是 520 DIY 真实配方，叠稳才写进回忆";
   if (catchCard) catchCard.textContent = "三车道接车票，连击触发奔赴狂热翻倍分";
-  if (blowCard) blowCard.textContent = "按住蓄力松手吹气，顽固蜡烛要吹更久";
+  if (hugCard) hugCard.textContent = "按住抱抱扛寒潮，松手回血，攒满「好暖」";
+  if (hugTitle) hugTitle.textContent = "冬夜好冷·抱抱取暖";
+  const stackTitle = document.querySelector('[data-game="stack"] strong');
+  if (stackTitle) stackTitle.textContent = "520·DIY 奶油千层";
 
   renderHallStats();
 })();

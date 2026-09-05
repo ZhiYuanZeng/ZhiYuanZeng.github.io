@@ -1,78 +1,78 @@
 {
   "v": 1,
   "kdf": {
-    "salt": "xH9yhEv80z9RUlwqPq6T8w==",
+    "salt": "I2h7LedHbN/KZQNksu9Ipw==",
     "iterations": 310000,
     "hash": "SHA-256"
   },
   "check": {
-    "iv": "qF46E7AqBbQmhBq8",
-    "data": "4irsJZqwzv4tz5UMLwtWl6VP2MeU"
+    "iv": "kwvrz9EPBBEEBi3X",
+    "data": "+D72mfkR9j+zowF9b+xu0+vJY8JJ"
   },
   "files": {
     "assets/photos/hero.webp": {
-      "id": "c1fa9f8ad97e0cc0",
-      "iv": "NMfUFivlKQ8lXZUi",
+      "id": "894d3ae904f2eb04",
+      "iv": "ggO+M8cxpnIcRIz9",
       "type": "image/webp"
     },
     "assets/photos/2021-05-20.webp": {
-      "id": "7a48d92757f26692",
-      "iv": "SSMYb7tYqvMyC6qL",
+      "id": "7cf4beef63b31817",
+      "iv": "CE5lkVrkomzRvxqj",
       "type": "image/webp"
     },
     "assets/photos/2023-04-luoyang.webp": {
-      "id": "670c7aae9d8e61c8",
-      "iv": "ydinXaYeUJ83P09j",
+      "id": "c98cd8b7e490d714",
+      "iv": "x//B/S/g22N2J9+y",
       "type": "image/webp"
     },
     "assets/photos/2026-05-16.webp": {
-      "id": "ab7599a5691fac2d",
-      "iv": "vzCAxmys6+qPn+dW",
+      "id": "4aa9382810035426",
+      "iv": "hU7aqHZzO3BT1n4Q",
       "type": "image/webp"
     },
     "assets/photos/gallery-playful.webp": {
-      "id": "e1341c3706a2d6eb",
-      "iv": "6kJVmUuDHm2OBUEk",
+      "id": "e4000af7a9a35923",
+      "iv": "DSAxWDKCbFyOitqh",
       "type": "image/webp"
     },
     "assets/photos/gallery-costume.webp": {
-      "id": "47f296d2d84563dd",
-      "iv": "J5LYq5BRjC6rTewm",
+      "id": "87f512f4528a155d",
+      "iv": "3UZFcOOP5D9cDdNW",
       "type": "image/webp"
     },
     "assets/photos/gallery-formal.webp": {
-      "id": "0b6273ae1886dabb",
-      "iv": "G4/4Ywf2750SBu3Z",
+      "id": "7fca934e368de14b",
+      "iv": "Eayz+jBmRUlmQTvw",
       "type": "image/webp"
     },
     "assets/photos/city-tianjin.webp": {
-      "id": "b119f675c22c03f4",
-      "iv": "WQ2Ocgwf2WVwQNa1",
+      "id": "3907c1da9b0cd97b",
+      "iv": "ShIkE1qDagXjwec5",
       "type": "image/webp"
     },
     "assets/photos/city-beijing-start.webp": {
-      "id": "86fe0d9feaba6ec7",
-      "iv": "nxjwsRuGHjJOwTxL",
+      "id": "56b0ae2ed000741b",
+      "iv": "TACGAhiF1WGOTBA2",
       "type": "image/webp"
     },
     "assets/photos/city-luoyang.webp": {
-      "id": "88879a575725d01c",
-      "iv": "6TdE6XEdYu+mD3Bf",
+      "id": "c5b42a60219d37aa",
+      "iv": "ypuC8Um+b0JkkbZ7",
       "type": "image/webp"
     },
     "assets/photos/city-nanchang.webp": {
-      "id": "b7912f81b6b4cd02",
-      "iv": "7mzq79BDlDHh7d2p",
+      "id": "260faa628713afef",
+      "iv": "TsQa4vjax23SaK14",
       "type": "image/webp"
     },
     "assets/photos/city-beijing-return.webp": {
-      "id": "6023133cbe5440e9",
-      "iv": "EJDjI37nD7eA7uqv",
+      "id": "0a4ec88989e4a627",
+      "iv": "XnfUh0NkojAqIxQn",
       "type": "image/webp"
     },
     "assets/audio/love-is-simple.m4a": {
-      "id": "1051027d1e935aba",
-      "iv": "x0hWpQ3aQHTJ2r3S",
+      "id": "d6bc08a5e03f7778",
+      "iv": "3z+4g7pVbSNv9fH8",
       "type": "audio/mp4"
     }
   }
