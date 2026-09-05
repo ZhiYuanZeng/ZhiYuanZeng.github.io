@@ -295,7 +295,7 @@ const caseToLetter = document.querySelector("#case-to-letter");
 const caseQuizStep = document.querySelector("#case-quiz-step");
 const caseQuizQuestion = document.querySelector("#case-quiz-question");
 const caseQuizOptions = document.querySelector("#case-quiz-options");
-const CASE_STORAGE_KEY = "museum-case-quiz-v2";
+const CASE_STORAGE_KEY = "museum-case-quiz-v3";
 const reduceCaseMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
 const caseQuestions = [
@@ -321,11 +321,11 @@ const caseQuestions = [
     wrong: "型号不对。再想想那个穿着宇航服的小人。",
   },
   {
-    question: "在上海的时候，最经常逛的超市是？",
-    answer: "奥乐齐",
-    options: ["奥乐齐", "盒马", "永辉", "山姆会员店"],
-    filed: "上海常去 · 奥乐齐",
-    wrong: "这家太贵或太远了。想想那家德国折扣超市。",
+    question: "小哥是什么时候开始变胖的？",
+    answer: "第二次北京后",
+    options: ["第二次北京后", "刚在一起就开始胖了", "第一次去北京后", "去上海读博后"],
+    filed: "第二次北京后开始变胖",
+    wrong: "时间线对不上。再想想后来回北京那一趟。",
   },
 ];
 
