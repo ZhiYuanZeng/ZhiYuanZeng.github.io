@@ -4228,3 +4228,312 @@ input:focus-visible {
     transform: none;
   }
 }
+
+/* —— 4399-style game hall —— */
+.game-hall {
+  --arcade-orange: #ff6a00;
+  --arcade-yellow: #ffd84d;
+  --arcade-blue: #3aa0ff;
+  --arcade-ink: #2a1200;
+  padding: 48px 24px 64px;
+  color: var(--arcade-ink);
+  background:
+    radial-gradient(circle at 12% 18%, rgba(255, 216, 77, 0.55), transparent 28%),
+    radial-gradient(circle at 88% 8%, rgba(58, 160, 255, 0.28), transparent 26%),
+    repeating-linear-gradient(
+      90deg,
+      rgba(255, 106, 0, 0.05) 0 12px,
+      transparent 12px 24px
+    ),
+    linear-gradient(180deg, #fff4e4 0%, #ffe0b8 100%);
+}
+
+.game-hall__banner {
+  display: grid;
+  grid-template-columns: 1.4fr 0.8fr;
+  gap: 24px;
+  align-items: end;
+  max-width: 1080px;
+  margin: 0 auto 28px;
+  padding: 22px 24px;
+  border: 4px solid #fff;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #ff8a2a, #ff5a00 55%, #ffb000);
+  box-shadow:
+    0 0 0 4px rgba(255, 106, 0, 0.35),
+    0 18px 40px rgba(180, 70, 0, 0.28);
+  color: #fff;
+}
+
+.game-hall__portal {
+  margin: 0 0 6px;
+  font-family: var(--utility);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.2);
+}
+
+.game-hall__banner h2 {
+  margin: 0 0 8px;
+  font-family: var(--display);
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  text-shadow: 2px 3px 0 rgba(120, 30, 0, 0.35);
+}
+
+.game-hall__banner p {
+  margin: 0;
+  max-width: 36em;
+  color: rgba(255, 255, 255, 0.92);
+  line-height: 1.7;
+}
+
+.game-hall__stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.game-hall__stats div {
+  padding: 12px 10px;
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.18);
+  text-align: center;
+}
+
+.game-hall__stats span {
+  display: block;
+  font-family: var(--utility);
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  opacity: 0.9;
+}
+
+.game-hall__stats strong {
+  display: block;
+  margin-top: 4px;
+  font-family: var(--display);
+  font-size: 1.4rem;
+  color: var(--arcade-yellow);
+}
+
+.game-hall__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+.game-card {
+  position: relative;
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  padding: 18px 16px 16px;
+  border: 3px solid #fff;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #fffdf8, #ffe9c8);
+  box-shadow:
+    0 0 0 3px rgba(255, 106, 0, 0.25),
+    0 14px 28px rgba(160, 70, 0, 0.18);
+  color: var(--arcade-ink);
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.game-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow:
+    0 0 0 3px rgba(255, 106, 0, 0.45),
+    0 22px 36px rgba(160, 70, 0, 0.28);
+}
+
+.game-card__badge {
+  position: absolute;
+  top: -10px;
+  left: -8px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #ff2d55;
+  color: #fff;
+  font-family: var(--utility);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  box-shadow: 0 4px 0 rgba(140, 0, 30, 0.35);
+}
+
+.game-card__badge--new {
+  background: #3aa0ff;
+  box-shadow: 0 4px 0 rgba(0, 70, 140, 0.35);
+}
+
+.game-card__badge--hard {
+  background: #7b5cff;
+  box-shadow: 0 4px 0 rgba(50, 20, 140, 0.35);
+}
+
+.game-card__art {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 120px;
+  border-radius: 12px;
+  font-size: 3rem;
+  box-shadow: inset 0 -8px 0 rgba(0, 0, 0, 0.08);
+}
+
+.game-card__art--stack {
+  background: linear-gradient(160deg, #ffd1e8, #ff8fb8 50%, #ff6a88);
+}
+
+.game-card__art--catch {
+  background: linear-gradient(160deg, #c8e7ff, #5eb6ff 50%, #3aa0ff);
+}
+
+.game-card__art--blow {
+  background: linear-gradient(160deg, #ffe7a8, #ffbf3c 50%, #ff8a00);
+}
+
+.game-card strong {
+  font-family: var(--display);
+  font-size: 1.2rem;
+}
+
+.game-card em {
+  color: #8a4b1c;
+  font-size: 0.86rem;
+  font-style: normal;
+  line-height: 1.55;
+}
+
+.game-card__btn {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ffd84d, #ff6a00);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 4px 0 #c44a00;
+}
+
+.arcade-stage {
+  position: fixed;
+  z-index: 1250;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(20, 8, 0, 0.72);
+  backdrop-filter: blur(6px);
+}
+
+.arcade-stage[hidden] {
+  display: none;
+}
+
+.arcade-stage__panel {
+  display: grid;
+  gap: 12px;
+  width: min(960px, 100%);
+  padding: 14px;
+  border: 4px solid #fff;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #fff8ea, #ffe0b0);
+  box-shadow: 0 0 0 4px rgba(255, 106, 0, 0.4), 0 30px 60px rgba(0, 0, 0, 0.4);
+}
+
+.arcade-stage__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #ff6a00, #ff9a1a);
+  color: #fff;
+}
+
+.arcade-back,
+.arcade-action {
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.arcade-back {
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.arcade-stage__bar strong {
+  font-family: var(--display);
+  font-size: 1.15rem;
+}
+
+.arcade-hud {
+  display: flex;
+  gap: 14px;
+  font-family: var(--utility);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+}
+
+.arcade-hud b {
+  color: var(--arcade-yellow);
+  font-size: 1rem;
+}
+
+.arcade-tip {
+  margin: 0;
+  color: #8a4b1c;
+  font-size: 0.92rem;
+  text-align: center;
+}
+
+#arcade-canvas {
+  width: 100%;
+  height: auto;
+  border: 3px solid #ff8a2a;
+  border-radius: 12px;
+  background: #1b1024;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.arcade-stage__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.arcade-action {
+  padding: 10px 22px;
+  background: linear-gradient(180deg, #ffd84d, #ff6a00);
+  color: #fff;
+  box-shadow: 0 4px 0 #c44a00;
+}
+
+.arcade-action:hover {
+  filter: brightness(1.05);
+}
+
+#arcade-help {
+  margin: 0;
+  color: #8a4b1c;
+  font-size: 0.82rem;
+}
+
+@media (max-width: 900px) {
+  .game-hall__banner,
+  .game-hall__grid {
+    grid-template-columns: 1fr;
+  }
+}

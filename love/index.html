@@ -596,6 +596,45 @@
         </div>
       </section>
 
+      <section id="game-hall" class="game-hall section" aria-labelledby="game-hall-title">
+        <div class="game-hall__banner reveal">
+          <div>
+            <p class="game-hall__portal">1229 · 心动小游戏大厅</p>
+            <h2 id="game-hall-title">4399 风 · 我们的故事关卡</h2>
+            <p>不考案卷了，来点网页小游戏。三款都取材自真实剧情，点封面就能开玩。</p>
+          </div>
+          <div class="game-hall__stats" aria-label="大厅战绩">
+            <div><span>今日畅玩</span><strong id="hall-play-count">0</strong></div>
+            <div><span>最高连击</span><strong id="hall-best-combo">0</strong></div>
+            <div><span>通关印章</span><strong id="hall-clear-count">0</strong>/3</div>
+          </div>
+        </div>
+
+        <div class="game-hall__grid reveal">
+          <button type="button" class="game-card" data-game="stack" aria-label="开始奶油千层叠叠乐">
+            <span class="game-card__badge">HOT</span>
+            <span class="game-card__art game-card__art--stack" aria-hidden="true">🍰</span>
+            <strong>奶油千层叠叠乐</strong>
+            <em>在最稳的一刻放下饼皮，挑战 520 高度</em>
+            <span class="game-card__btn">开始游戏</span>
+          </button>
+          <button type="button" class="game-card" data-game="catch" aria-label="开始异地车票接接乐">
+            <span class="game-card__badge game-card__badge--new">NEW</span>
+            <span class="game-card__art game-card__art--catch" aria-hidden="true">🚄</span>
+            <strong>异地车票接接乐</strong>
+            <em>左右接住正确城市车票，躲开干扰项</em>
+            <span class="game-card__btn">开始游戏</span>
+          </button>
+          <button type="button" class="game-card" data-game="blow" aria-label="开始吹蜡烛大作战">
+            <span class="game-card__badge game-card__badge--hard">难</span>
+            <span class="game-card__art game-card__art--blow" aria-hidden="true">🕯️</span>
+            <strong>吹蜡烛大作战</strong>
+            <em>限时点灭五根蜡烛，越快分越高</em>
+            <span class="game-card__btn">开始游戏</span>
+          </button>
+        </div>
+      </section>
+
       <section class="future section">
         <div class="section__heading reveal">
           <p class="utility">OPEN CASES</p>
@@ -653,6 +692,25 @@
 
     <canvas id="finale-fireworks" class="finale-fireworks" aria-hidden="true"></canvas>
 
+    <div id="arcade-stage" class="arcade-stage" hidden>
+      <div class="arcade-stage__panel">
+        <header class="arcade-stage__bar">
+          <button type="button" id="arcade-back" class="arcade-back">← 返回大厅</button>
+          <strong id="arcade-title">小游戏</strong>
+          <div class="arcade-hud">
+            <span>得分 <b id="arcade-score">0</b></span>
+            <span>连击 <b id="arcade-combo">0</b></span>
+          </div>
+        </header>
+        <p class="arcade-tip" id="arcade-tip">准备开始</p>
+        <canvas id="arcade-canvas" width="900" height="560" aria-label="小游戏画布"></canvas>
+        <div class="arcade-stage__footer">
+          <button type="button" id="arcade-action" class="arcade-action">开始</button>
+          <p id="arcade-help">键盘提示会显示在这里</p>
+        </div>
+      </div>
+    </div>
+
     <aside id="music-player" class="music-player is-collapsed" aria-label="背景音乐播放器">
       <button id="music-toggle" class="music-player__toggle" type="button" aria-label="播放《爱很简单》" aria-pressed="false">
         <span class="music-player__disc" aria-hidden="true"><i></i></span>
@@ -681,6 +739,7 @@
 
     <script src="./vault.js"></script>
     <script src="./script.js"></script>
+    <script src="./games.js"></script>
     <script type="module" src="./experience.js"></script>
   </body>
 </html>
