@@ -284,6 +284,80 @@ reasonButtons.forEach((button) => {
   });
 });
 
+const caseSection = document.querySelector("#case-file");
+const caseChips = [...document.querySelectorAll("[data-case-chip]")];
+const caseFolder = document.querySelector("#case-folder");
+const caseFolderList = document.querySelector("#case-folder-list");
+const caseCount = document.querySelector("#case-count");
+const caseHint = document.querySelector("#case-hint");
+const caseVerdict = document.querySelector("#case-verdict");
+const caseStamp = document.querySelector("#case-stamp");
+const caseToLetter = document.querySelector("#case-to-letter");
+const CASE_STORAGE_KEY = "museum-case-closed";
+const caseFiled = new Set();
+const reduceCaseMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+const fileCaseChip = (chip) => {
+  const id = chip.dataset.caseChip;
+  if (caseFiled.has(id) || caseSection.classList.contains("is-complete")) return;
+
+  caseFiled.add(id);
+  chip.classList.add("is-filed");
+  chip.setAttribute("aria-disabled", "true");
+  caseFolder.classList.add("is-receiving");
+  window.setTimeout(() => caseFolder.classList.remove("is-receiving"), 320);
+
+  const item = document.createElement("li");
+  item.textContent = chip.querySelector("strong").textContent;
+  caseFolderList.append(item);
+  caseCount.textContent = String(caseFiled.size);
+
+  if (caseFiled.size === caseChips.length) sealCaseFile();
+};
+
+const sealCaseFile = () => {
+  caseSection.classList.add("is-complete");
+  caseFolder.classList.add("is-sealed");
+  caseHint.textContent = "证物已收齐 · 正在生成结案书";
+  caseVerdict.hidden = false;
+  sessionStorage.setItem(CASE_STORAGE_KEY, "yes");
+
+  const stampDelay = reduceCaseMotion.matches ? 80 : 700;
+  window.setTimeout(() => {
+    caseStamp.classList.add("is-struck");
+    emitBurst(caseStamp, 16);
+  }, stampDelay);
+};
+
+const restoreCaseFile = () => {
+  caseChips.forEach((chip) => {
+    caseFiled.add(chip.dataset.caseChip);
+    chip.classList.add("is-filed");
+    chip.setAttribute("aria-disabled", "true");
+    const item = document.createElement("li");
+    item.textContent = chip.querySelector("strong").textContent;
+    caseFolderList.append(item);
+  });
+  caseCount.textContent = String(caseChips.length);
+  caseSection.classList.add("is-complete");
+  caseFolder.classList.add("is-sealed");
+  caseHint.textContent = "本案已结 · 可随时回看结案书";
+  caseVerdict.hidden = false;
+  caseStamp.classList.add("is-struck");
+};
+
+caseChips.forEach((chip) => {
+  chip.addEventListener("click", () => fileCaseChip(chip));
+});
+
+caseToLetter?.addEventListener("click", () => {
+  document.querySelector(".letter")?.scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
+if (sessionStorage.getItem(CASE_STORAGE_KEY) === "yes") {
+  restoreCaseFile();
+}
+
 const openLetterButton = document.querySelector("#open-letter");
 const letterPreview = document.querySelector("#letter-preview");
 const letterFull = document.querySelector("#letter-full");
