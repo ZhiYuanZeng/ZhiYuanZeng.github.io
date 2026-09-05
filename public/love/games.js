@@ -30,10 +30,10 @@
       tip: "接车票奔赴丫头。连击狂热翻倍；台风天风雨交加，车票会被吹歪！",
       help: "←→ / A D / 鼠标换道 · 躲开加班堵车拖延台风 · 风雨里稳住",
     },
-    hug: {
-      title: "冬夜好冷·抱抱取暖",
-      tip: "按住画布不放来抱抱！约 1 秒后寒潮来袭，把寒意压下去就记一次「好暖」。",
-      help: "按住画布或空格拥抱 · 松手恢复体力 · 寒潮时抱紧才得分",
+    grow: {
+      title: "小胖哥进化论",
+      tip: "吃比自己小的美食长胖，躲开沙拉跑步机。长满十多斤，从小哥进化成小胖哥！",
+      help: "鼠标 / WASD 移动 · 空格或点击「饿虎扑食」冲刺，可吞下略大的一盘",
     },
   };
 
@@ -241,7 +241,7 @@
   function renderHallStats() {
     playCountEl.textContent = String(stats.plays || 0);
     bestComboEl.textContent = String(stats.bestCombo || 0);
-    const cleared = ["stack", "catch", "hug"].filter((id) => stats[`clear_${id}`] || (id === "hug" && stats.clear_blow)).length;
+    const cleared = ["stack", "catch", "grow"].filter((id) => stats[`clear_${id}`]).length;
     clearCountEl.textContent = String(cleared);
   }
 
@@ -257,9 +257,10 @@
   }
 
   function openGame(id) {
-    const game = Games[id] || (id === "blow" ? Games.hug : null);
-    if (!game) return;
-    active = game === Games.hug ? "hug" : id;
+    const ALIAS = { hug: "grow", blow: "grow" };
+    const resolved = Games[id] ? ALIAS[id] || id : null;
+    if (!resolved) return;
+    active = resolved;
     mode = "ready";
     running = false;
     score = 0;
@@ -268,7 +269,7 @@
     juice.particles = [];
     juice.floats = [];
     juice.banner = null;
-    const meta = META[active] || META.hug;
+    const meta = META[active] || META.grow;
     titleEl.textContent = meta.title;
     tip.textContent = meta.tip;
     helpEl.textContent = meta.help;
@@ -1134,308 +1135,430 @@
     return { reset, update, draw, moveLane, pointerToLane };
   })();
 
-  // ========== HUG (winter warm) ==========
-  const Hug = (() => {
-    const GOAL = 7;
-    let chill = 35;
-    let stamina = 100;
-    let hugging = false;
-    let warm = 0;
-    let wind = 0;
-    let windCd = 2.5;
-    let snow = [];
-    let hearts = [];
-    let bob = 0;
-    let speech = { text: "好冷…", life: 0 };
-    let needHug = false;
-    let hugPulse = 0;
-    let savedFromWind = false;
+  // ========== GROW (fish-eat-fish: 小胖哥进化论) ==========
+  const Grow = (() => {
+    const GOAL = 15; // 十多斤
+    const TIERS = [
+      { at: 0, name: "小哥", note: "还是那个瘦瘦的小哥" },
+      { at: 5, name: "小胖猪", note: "备注被你改成了小胖猪" },
+      { at: 10, name: "小胖哥", note: "定格成小胖哥" },
+    ];
+    const FOODS = [
+      { label: "锅包肉", color: "#ff8a3c", gain: 3.2, r: 40 },
+      { label: "必胜客", color: "#ff5a5f", gain: 2.4, r: 33 },
+      { label: "奶油千层", color: "#ff9ec0", gain: 2.2, r: 31 },
+      { label: "火锅", color: "#e63946", gain: 3.6, r: 44 },
+      { label: "烤冷面", color: "#f4a261", gain: 1.6, r: 25 },
+      { label: "奶茶", color: "#d8a06a", gain: 1.2, r: 20 },
+      { label: "小龙虾", color: "#ef476f", gain: 1.4, r: 23 },
+      { label: "糖葫芦", color: "#ff4d6d", gain: 0.9, r: 16 },
+      { label: "小蛋糕", color: "#ffc2d8", gain: 0.8, r: 15 },
+    ];
+    const DIETS = [
+      { label: "沙拉", color: "#57cc99" },
+      { label: "跑步机", color: "#4cc9f0" },
+      { label: "体重秤", color: "#8ec5ff" },
+      { label: "健身卡", color: "#7b5cff" },
+      { label: "代餐粉", color: "#48cae4" },
+    ];
+
+    let px = W / 2;
+    let py = H / 2;
+    let vx = 0;
+    let vy = 0;
+    let weight = 0;
+    let lives = 3;
+    let tier = 0;
+    let items = [];
+    let spawn = 0;
+    let dash = 0;
+    let dashCd = 0;
+    let invuln = 0;
+    let face = 0;
+    let lamps = [];
+
+    const radius = () => 22 + weight * 1.9;
 
     const reset = () => {
-      chill = 35;
-      stamina = 100;
-      hugging = false;
-      warm = 0;
-      wind = 0;
-      windCd = 0.9;
-      bob = 0;
-      hugPulse = 0;
-      needHug = false;
-      savedFromWind = false;
-      speech = { text: "好冷…快抱抱我", life: 1.8 };
-      snow = Array.from({ length: 46 }, () => ({
-        x: Math.random() * W,
-        y: Math.random() * H,
-        s: 1.2 + Math.random() * 2.4,
-        vy: 28 + Math.random() * 40,
-        vx: -12 + Math.random() * 24,
-      }));
-      hearts = [];
+      px = W / 2;
+      py = H / 2;
+      vx = 0;
+      vy = 0;
+      weight = 0;
+      lives = 3;
+      tier = 0;
+      items = [];
+      spawn = 0;
+      dash = 0;
+      dashCd = 0;
+      invuln = 0;
+      face = 0;
+      lamps = Array.from({ length: 7 }, (_, i) => ({ x: 70 + i * 130, sway: Math.random() * 6 }));
+      for (let i = 0; i < 6; i += 1) spawnItem(true);
     };
 
-    const setHugging = (on) => {
-      if (!running) return;
-      if (on && stamina < 6) {
-        tip.textContent = "体力空了，先松手回血再抱";
-        blip(160, 0.06, "sawtooth", 0.04);
-        hugging = false;
+    function spawnItem(anywhere = false) {
+      const diet = Math.random() < 0.22;
+      const edge = Math.floor(Math.random() * 4);
+      let x;
+      let y;
+      if (anywhere) {
+        x = 60 + Math.random() * (W - 120);
+        y = 60 + Math.random() * (H - 160);
+      } else if (edge === 0) {
+        x = -50;
+        y = 60 + Math.random() * (H - 140);
+      } else if (edge === 1) {
+        x = W + 50;
+        y = 60 + Math.random() * (H - 140);
+      } else if (edge === 2) {
+        x = 60 + Math.random() * (W - 120);
+        y = -50;
+      } else {
+        x = 60 + Math.random() * (W - 120);
+        y = H + 50;
+      }
+      const speed = 40 + Math.random() * 70;
+      const ang = Math.atan2(H / 2 - y, W / 2 - x) + (Math.random() - 0.5) * 1.1;
+
+      if (diet) {
+        const d = DIETS[Math.floor(Math.random() * DIETS.length)];
+        items.push({
+          kind: "diet",
+          x,
+          y,
+          r: 26 + Math.random() * 10,
+          vx: Math.cos(ang) * speed,
+          vy: Math.sin(ang) * speed,
+          label: d.label,
+          color: d.color,
+          wob: Math.random() * 6,
+        });
         return;
       }
-      const was = hugging;
-      hugging = !!(on && stamina > 0);
-      if (hugging && !was) {
-        speech = { text: "我抱着你", life: 1.4 };
-        tip.textContent = needHug ? "寒潮里抱紧！把寒意压下去" : "紧紧抱住中…松手可恢复体力";
-        blip(420, 0.05, "sine", 0.03);
-        hugPulse = 0.6;
+
+      const f = FOODS[Math.floor(Math.random() * FOODS.length)];
+      items.push({
+        kind: "food",
+        x,
+        y,
+        r: f.r,
+        vx: Math.cos(ang) * speed,
+        vy: Math.sin(ang) * speed,
+        label: f.label,
+        color: f.color,
+        gain: f.gain,
+        wob: Math.random() * 6,
+      });
+    }
+
+    const startDash = () => {
+      if (!running || dashCd > 0) return;
+      dash = 0.28;
+      dashCd = 1.4;
+      punch(5);
+      blip(560, 0.07, "square", 0.035);
+      burst(px, py, "#ffd84d", 10);
+      floatText(px, py - radius() - 12, "饿虎扑食！", "#ffd84d");
+    };
+
+    const checkTier = () => {
+      let next = tier;
+      TIERS.forEach((t, i) => {
+        if (weight >= t.at) next = i;
+      });
+      if (next > tier) {
+        tier = next;
+        const t = TIERS[tier];
+        showBanner(`进化！${t.name}`, "#ffd84d");
+        tip.textContent = `${t.note} · 已长 ${weight.toFixed(1)} 斤`;
+        burst(px, py, "#ff7eb6", 24);
+        burst(px, py, "#ffd84d", 16);
+        punch(9);
+        flashScreen(0.16);
+        blip(720, 0.09, "triangle");
+        blip(980, 0.11, "square", 0.03);
       }
     };
 
-    const grantWarm = () => {
-      warm += 1;
+    const hurt = (item) => {
+      if (invuln > 0) return;
+      lives -= 1;
+      invuln = 1.4;
+      resetCombo();
+      setHud();
+      const lost = Math.min(weight, 2.5);
+      weight = Math.max(0, weight - lost);
+      punch(14);
+      flashScreen(0.24);
+      burst(item.x, item.y, "#57cc99", 16);
+      floatText(px, py - radius() - 14, `-${lost.toFixed(1)} 斤`, "#8ec5ff");
+      blip(150, 0.13, "sawtooth", 0.05);
+      tip.textContent =
+        item.kind === "diet"
+          ? `被「${item.label}」拦住了…丫头说该减肥了`
+          : `「${item.label}」太大，还吃不下！`;
+      // knock back
+      const ang = Math.atan2(py - item.y, px - item.x);
+      vx += Math.cos(ang) * 320;
+      vy += Math.sin(ang) * 320;
+      if (lives <= 0) endGame(false);
+    };
+
+    const eat = (item) => {
+      weight += item.gain;
       bumpCombo(1);
-      addScore(140 + combo * 15, W / 2, H * 0.42, "好暖");
-      burst(W / 2, H * 0.5, "#ff7eb6", 16);
-      burst(W / 2, H * 0.5, "#ffd84d", 10);
-      punch(5);
-      flashScreen(0.1);
-      blip(720, 0.08, "triangle");
-      showBanner(warm >= GOAL ? "这一晚被你暖住了" : `好暖 ×${warm}`, "#ffb4c8");
-      tip.textContent = warm >= GOAL
-        ? "从那句「好冷」开始的拥抱，一路延伸到今天"
-        : `记下第 ${warm} 次「好暖」· 目标 ${GOAL}`;
-      for (let i = 0; i < 5; i += 1) {
-        hearts.push({
-          x: W / 2 + (Math.random() - 0.5) * 80,
-          y: H * 0.48,
-          vy: -40 - Math.random() * 30,
-          life: 1,
-        });
+      addScore(Math.round((60 + item.gain * 40) * (1 + combo * 0.08)), item.x, item.y, `+${item.gain.toFixed(1)}斤`);
+      burst(item.x, item.y, item.color, 12);
+      punch(3);
+      blip(520 + Math.min(400, combo * 25), 0.05, "square", 0.035);
+      if (combo < 5) tip.textContent = `吃掉「${item.label}」· ${weight.toFixed(1)}/${GOAL} 斤`;
+      checkTier();
+      if (weight >= GOAL) {
+        tip.textContent = "长了十多斤！你却越来越瘦、越来越好看";
+        endGame(true);
       }
-      if (warm >= GOAL) endGame(true);
     };
 
     const update = (dt) => {
-      bob += dt * 5;
-      hugPulse = Math.max(0, hugPulse - dt);
-      wind = Math.max(0, wind - dt);
-      windCd -= dt;
-      speech.life = Math.max(0, speech.life - dt);
+      face += dt * 4;
+      dash = Math.max(0, dash - dt);
+      dashCd = Math.max(0, dashCd - dt);
+      invuln = Math.max(0, invuln - dt);
 
-      // Sync hold input every frame (pointer capture + space)
-      const held = pointerDown || keys.has(" ");
-      if (held) setHugging(true);
-      else if (hugging) setHugging(false);
-
-      if (windCd <= 0) {
-        wind = 1.8 + Math.random() * 0.7;
-        windCd = 3.4 + Math.random() * 1.6;
-        chill = Math.min(100, chill + 18 + Math.random() * 10);
-        needHug = true;
-        savedFromWind = false;
-        speech = { text: Math.random() > 0.5 ? "好冷！" : "风好大…", life: 1.4 };
-        tip.textContent = "寒潮来了！按住画布抱抱，把寒意压下去";
-        punch(6);
-        blip(180, 0.1, "sawtooth", 0.045);
+      // steering: pointer + keys
+      let tx = pointerX;
+      let ty = pointerY;
+      const kx = (keys.has("ArrowRight") || keys.has("d") || keys.has("D") ? 1 : 0) -
+        (keys.has("ArrowLeft") || keys.has("a") || keys.has("A") ? 1 : 0);
+      const ky = (keys.has("ArrowDown") || keys.has("s") || keys.has("S") ? 1 : 0) -
+        (keys.has("ArrowUp") || keys.has("w") || keys.has("W") ? 1 : 0);
+      if (kx || ky) {
+        tx = px + kx * 240;
+        ty = py + ky * 240;
+      }
+      const ang = Math.atan2(ty - py, tx - px);
+      const dist = Math.hypot(tx - px, ty - py);
+      const accel = (dash > 0 ? 2600 : 900) * Math.min(1, dist / 60);
+      vx += Math.cos(ang) * accel * dt;
+      vy += Math.sin(ang) * accel * dt;
+      const drag = dash > 0 ? 0.94 : 0.9;
+      vx *= Math.pow(drag, dt * 60);
+      vy *= Math.pow(drag, dt * 60);
+      const maxV = dash > 0 ? 700 : 300 - weight * 5;
+      const sp = Math.hypot(vx, vy);
+      if (sp > maxV) {
+        vx = (vx / sp) * maxV;
+        vy = (vy / sp) * maxV;
+      }
+      px += vx * dt;
+      py += vy * dt;
+      const r = radius();
+      if (px < r) {
+        px = r;
+        vx = Math.abs(vx) * 0.4;
+      }
+      if (px > W - r) {
+        px = W - r;
+        vx = -Math.abs(vx) * 0.4;
+      }
+      if (py < r) {
+        py = r;
+        vy = Math.abs(vy) * 0.4;
+      }
+      if (py > H - r - 20) {
+        py = H - r - 20;
+        vy = -Math.abs(vy) * 0.4;
       }
 
-      const windBoost = wind > 0 ? 24 : 11;
-      if (hugging && stamina > 0) {
-        stamina = Math.max(0, stamina - 26 * dt);
-        chill = Math.max(0, chill - (42 + (wind > 0 ? 14 : 0)) * dt);
-        hugPulse = Math.max(hugPulse, 0.35);
-        if (stamina <= 0) {
-          hugging = false;
-          tip.textContent = "抱抱太久也累，松手喘口气";
-        }
-        if (needHug && !savedFromWind && chill <= 42) {
-          savedFromWind = true;
-          needHug = false;
-          grantWarm();
-        }
-        if (Math.random() < dt * 4) {
-          hearts.push({
-            x: W / 2 + (Math.random() - 0.5) * 40,
-            y: H * 0.55,
-            vy: -50,
-            life: 0.7,
-          });
-        }
-      } else {
-        hugging = false;
-        stamina = Math.min(100, stamina + 24 * dt);
-        chill = Math.min(100, chill + windBoost * dt);
+      spawn -= dt;
+      if (spawn <= 0 && items.length < 14) {
+        spawnItem();
+        spawn = 0.5 + Math.random() * 0.5;
       }
 
-      snow.forEach((f) => {
-        f.y += f.vy * dt;
-        f.x += f.vx * dt + (wind > 0 ? -60 * dt : 0);
-        if (f.y > H) {
-          f.y = -6;
-          f.x = Math.random() * W;
+      items = items.filter((item) => {
+        item.wob += dt * 5;
+        item.x += item.vx * dt;
+        item.y += item.vy * dt;
+        if (item.x < -90 || item.x > W + 90 || item.y < -90 || item.y > H + 90) return false;
+
+        const d = Math.hypot(item.x - px, item.y - py);
+        if (d > item.r + r) return true;
+
+        if (item.kind === "diet") {
+          hurt(item);
+          return false;
         }
-        if (f.x < -10) f.x = W + 5;
-        if (f.x > W + 10) f.x = -5;
+        // dash lets you swallow slightly bigger plates
+        const allow = r * (dash > 0 ? 1.28 : 1) >= item.r * 0.94;
+        if (allow) {
+          eat(item);
+          return false;
+        }
+        hurt(item);
+        return false;
       });
-      hearts = hearts.filter((h) => {
-        h.y += h.vy * dt;
-        h.life -= dt;
-        return h.life > 0;
-      });
-
-      if (chill >= 100) {
-        chill = 100;
-        tip.textContent = "这一晚太冷了…再抱紧一点试试";
-        endGame(false);
-      }
     };
 
-    const drawPerson = (g, x, y, opts) => {
-      const { coat, hair, label, shiver } = opts;
-      const sx = shiver ? Math.sin(bob * 18) * 2.5 : 0;
+    const drawGuy = (g) => {
+      const r = radius();
+      const blink = invuln > 0 && Math.floor(invuln * 12) % 2 === 0;
       g.save();
-      g.translate(x + sx, y);
-      // legs
-      g.fillStyle = "#2a2030";
-      g.fillRect(-12, 48, 10, 28);
-      g.fillRect(4, 48, 10, 28);
-      // body
-      g.fillStyle = coat;
-      roundRect(g, -22, 8, 44, 48, 14);
-      g.fill();
-      // head
-      g.fillStyle = "#f3c7a5";
-      g.beginPath();
-      g.arc(0, 0, 18, 0, Math.PI * 2);
-      g.fill();
-      g.fillStyle = hair;
-      g.beginPath();
-      g.ellipse(0, -10, 18, 12, 0, Math.PI, 0);
-      g.fill();
-      g.fillStyle = "#2a1200";
-      g.beginPath();
-      g.arc(-6, 0, 2.2, 0, Math.PI * 2);
-      g.arc(6, 0, 2.2, 0, Math.PI * 2);
-      g.fill();
-      if (shiver) {
-        g.strokeStyle = "#5b8def";
-        g.lineWidth = 2;
+      g.translate(px, py);
+      g.globalAlpha = blink ? 0.45 : 1;
+      if (dash > 0) {
+        g.fillStyle = "rgba(255,216,77,0.25)";
         g.beginPath();
-        g.moveTo(16, -8);
-        g.lineTo(24, -14);
-        g.moveTo(16, 0);
-        g.lineTo(26, -2);
+        g.arc(0, 0, r + 12, 0, Math.PI * 2);
+        g.fill();
+      }
+      // body
+      const grd = g.createRadialGradient(-r * 0.3, -r * 0.3, r * 0.2, 0, 0, r);
+      grd.addColorStop(0, "#ffd9a8");
+      grd.addColorStop(1, "#ffb703");
+      g.fillStyle = grd;
+      g.beginPath();
+      g.arc(0, 0, r, 0, Math.PI * 2);
+      g.fill();
+      // cheeks grow with weight
+      g.fillStyle = "rgba(255,120,150,0.45)";
+      g.beginPath();
+      g.ellipse(-r * 0.45, r * 0.15, r * 0.22, r * 0.14, 0, 0, Math.PI * 2);
+      g.ellipse(r * 0.45, r * 0.15, r * 0.22, r * 0.14, 0, 0, Math.PI * 2);
+      g.fill();
+      // hair
+      g.fillStyle = "#3b2218";
+      g.beginPath();
+      g.ellipse(0, -r * 0.62, r * 0.85, r * 0.42, 0, Math.PI, 0);
+      g.fill();
+      // eyes
+      g.fillStyle = "#2a1200";
+      const ey = -r * 0.08;
+      g.beginPath();
+      g.arc(-r * 0.3, ey, Math.max(2, r * 0.1), 0, Math.PI * 2);
+      g.arc(r * 0.3, ey, Math.max(2, r * 0.1), 0, Math.PI * 2);
+      g.fill();
+      // mouth — open when dashing
+      g.strokeStyle = "#2a1200";
+      g.lineWidth = Math.max(2, r * 0.07);
+      g.beginPath();
+      if (dash > 0) {
+        g.fillStyle = "#c1121f";
+        g.beginPath();
+        g.ellipse(0, r * 0.34, r * 0.3, r * 0.24, 0, 0, Math.PI * 2);
+        g.fill();
+      } else {
+        g.arc(0, r * 0.2, r * 0.32, 0.18 * Math.PI, 0.82 * Math.PI);
         g.stroke();
       }
+      g.globalAlpha = 1;
       g.fillStyle = "#fff";
-      g.font = "bold 12px sans-serif";
+      g.font = `bold ${Math.max(12, Math.round(r * 0.34))}px Songti SC, serif`;
       g.textAlign = "center";
-      g.fillText(label, 0, 92);
+      g.fillText(TIERS[tier].name, 0, -r - 12);
       g.restore();
     };
 
     const draw = (g) => {
       const grad = g.createLinearGradient(0, 0, 0, H);
-      grad.addColorStop(0, "#0b1730");
-      grad.addColorStop(1, hugging ? "#3a2048" : "#152238");
+      grad.addColorStop(0, "#1b1026");
+      grad.addColorStop(1, "#3d1b2e");
       g.fillStyle = grad;
       g.fillRect(0, 0, W, H);
+      drawStars(g, "rgba(255,220,180,0.35)");
 
-      // cafe
-      g.fillStyle = "#1a2233";
-      g.fillRect(60, H * 0.38, 220, H * 0.4);
-      g.fillStyle = "#f6c76e";
-      g.globalAlpha = 0.35 + (hugging ? 0.25 : 0);
-      g.fillRect(90, H * 0.46, 70, 50);
-      g.fillRect(180, H * 0.46, 70, 50);
-      g.globalAlpha = 1;
-      g.fillStyle = "#2a3144";
-      g.fillRect(0, H * 0.76, W, H * 0.24);
-      g.fillStyle = "#3a455c";
-      g.fillRect(0, H * 0.76, W, 10);
-
-      snow.forEach((f) => {
-        g.fillStyle = "rgba(255,255,255,0.75)";
+      // night market stalls + lanterns
+      g.fillStyle = "rgba(0,0,0,0.3)";
+      g.fillRect(0, H - 70, W, 70);
+      lamps.forEach((l, i) => {
+        const x = l.x + Math.sin(face * 0.6 + l.sway) * 6;
+        g.strokeStyle = "rgba(255,255,255,0.15)";
+        g.lineWidth = 2;
         g.beginPath();
-        g.arc(f.x, f.y, f.s, 0, Math.PI * 2);
-        g.fill();
-      });
-
-      const mid = W / 2;
-      const baseY = H * 0.58;
-      if (hugging) {
-        // shared glow
-        g.fillStyle = `rgba(255,150,180,${0.15 + hugPulse * 0.25})`;
-        g.beginPath();
-        g.ellipse(mid, baseY + 20, 110, 70, 0, 0, Math.PI * 2);
-        g.fill();
-        drawPerson(g, mid - 18, baseY, { coat: "#e85a95", hair: "#3b2218", label: "丫头", shiver: false });
-        drawPerson(g, mid + 22, baseY, { coat: "#ffb703", hair: "#2a1810", label: "小胖哥", shiver: false });
-        // arms wrap cue
-        g.strokeStyle = "rgba(255,216,77,0.7)";
-        g.lineWidth = 4;
-        g.beginPath();
-        g.arc(mid, baseY + 28, 48, 0.15 * Math.PI, 0.85 * Math.PI);
+        g.moveTo(x, 0);
+        g.lineTo(x, 34);
         g.stroke();
-      } else {
-        drawPerson(g, mid - 70, baseY, { coat: "#e85a95", hair: "#3b2218", label: "丫头", shiver: false });
-        drawPerson(g, mid + 70, baseY, { coat: "#ffb703", hair: "#2a1810", label: "小胖哥", shiver: true });
-      }
-
-      hearts.forEach((h) => {
-        g.globalAlpha = Math.max(0, h.life);
-        g.fillStyle = "#ff7eb6";
-        g.font = "18px sans-serif";
-        g.textAlign = "center";
-        g.fillText("♥", h.x, h.y);
+        g.fillStyle = i % 2 ? "#ff6a00" : "#ffd84d";
+        g.globalAlpha = 0.85;
+        g.beginPath();
+        g.ellipse(x, 44, 13, 17, 0, 0, Math.PI * 2);
+        g.fill();
+        g.globalAlpha = 0.16;
+        g.beginPath();
+        g.arc(x, 44, 34, 0, Math.PI * 2);
+        g.fill();
+        g.globalAlpha = 1;
       });
-      g.globalAlpha = 1;
 
-      if (speech.life > 0) {
-        const sx = hugging ? mid + 40 : mid + 100;
-        g.fillStyle = "rgba(255,255,255,0.92)";
-        roundRect(g, sx - 40, baseY - 70, 80, 32, 10);
+      items.forEach((item) => {
+        const bobY = Math.sin(item.wob) * 3;
+        g.save();
+        g.translate(item.x, item.y + bobY);
+        const edible = item.kind === "food" && radius() * (dash > 0 ? 1.28 : 1) >= item.r * 0.94;
+        if (item.kind === "diet") {
+          g.strokeStyle = "#fff";
+          g.setLineDash([5, 4]);
+          g.lineWidth = 2;
+          g.beginPath();
+          g.arc(0, 0, item.r + 6, 0, Math.PI * 2);
+          g.stroke();
+          g.setLineDash([]);
+        }
+        g.fillStyle = item.color;
+        g.beginPath();
+        g.arc(0, 0, item.r, 0, Math.PI * 2);
         g.fill();
-        g.fillStyle = "#5d1738";
-        g.font = "bold 14px Songti SC, serif";
+        g.fillStyle = "rgba(255,255,255,0.35)";
+        g.beginPath();
+        g.ellipse(-item.r * 0.3, -item.r * 0.35, item.r * 0.4, item.r * 0.22, -0.5, 0, Math.PI * 2);
+        g.fill();
+        if (item.kind === "food" && !edible) {
+          g.strokeStyle = "rgba(255,77,109,0.9)";
+          g.lineWidth = 3;
+          g.beginPath();
+          g.arc(0, 0, item.r + 4, 0, Math.PI * 2);
+          g.stroke();
+        }
+        g.fillStyle = "#2a1200";
+        g.font = `bold ${Math.max(11, Math.round(item.r * 0.46))}px Songti SC, serif`;
         g.textAlign = "center";
-        g.fillText(speech.text, sx, baseY - 48);
-      }
+        g.fillText(item.label, 0, item.r * 0.18);
+        g.restore();
+      });
 
-      // meters
-      const drawMeter = (x, y, w, value, color, label) => {
-        g.fillStyle = "rgba(0,0,0,0.35)";
-        roundRect(g, x, y, w, 18, 9);
-        g.fill();
-        g.fillStyle = color;
-        roundRect(g, x + 2, y + 2, Math.max(0, (w - 4) * (value / 100)), 14, 7);
-        g.fill();
-        g.fillStyle = "#ffd84d";
-        g.font = "bold 12px sans-serif";
-        g.textAlign = "left";
-        g.fillText(label, x, y - 6);
-      };
-      drawMeter(24, 48, 220, chill, chill > 70 ? "#5b8def" : "#8ec5ff", `寒意 ${Math.floor(chill)}`);
-      drawMeter(24, 92, 220, stamina, "#ffb703", `体力 ${Math.floor(stamina)}`);
+      drawGuy(g);
+
+      // HUD
       g.fillStyle = "#ffd84d";
       g.font = "bold 16px SFMono-Regular, monospace";
       g.textAlign = "left";
-      g.fillText(`好暖 ${warm} / ${GOAL}`, 24, 140);
-      if (wind > 0) {
-        g.fillStyle = "#8ec5ff";
-        g.font = "bold 18px Songti SC, serif";
-        g.fillText("寒潮中！快抱抱", 24, 168);
-      }
-      g.fillStyle = "#ffe7f1";
-      g.font = "13px sans-serif";
-      g.textAlign = "center";
-      g.fillText(hugging ? "紧紧抱住中…" : "按住拥抱 · 松手恢复体力", W / 2, H - 24);
+      g.fillText(`命 ${"♥".repeat(Math.max(0, lives))}${"♡".repeat(Math.max(0, 3 - lives))}`, 20, 76);
+      g.fillText(`体重 +${weight.toFixed(1)} / ${GOAL} 斤`, 20, 100);
+      // weight bar
+      g.fillStyle = "rgba(0,0,0,0.35)";
+      roundRect(g, 20, 110, 240, 14, 7);
+      g.fill();
+      g.fillStyle = "#ff7eb6";
+      roundRect(g, 22, 112, Math.max(0, 236 * Math.min(1, weight / GOAL)), 10, 5);
+      g.fill();
+      // dash meter
+      g.fillStyle = dashCd > 0 ? "rgba(255,255,255,0.35)" : "#ffd84d";
+      g.font = "bold 13px sans-serif";
+      g.fillText(dashCd > 0 ? `冲刺冷却 ${dashCd.toFixed(1)}s` : "空格 / 点击：饿虎扑食", 20, 144);
+      g.fillStyle = "rgba(255,231,241,0.7)";
+      g.font = "12px sans-serif";
+      g.textAlign = "right";
+      g.fillText(`下一步：${TIERS[Math.min(tier + 1, TIERS.length - 1)].name}`, W - 20, 76);
     };
 
-    return { reset, update, draw, setHugging };
+    return { reset, update, draw, startDash };
   })();
 
-  const Games = { stack: Stack, catch: Catch, hug: Hug, blow: null };
+  const Games = { stack: Stack, catch: Catch, grow: Grow };
+  // aliases so older cards still open the right game
+  Games.hug = Grow;
+  Games.blow = Grow;
   // alias in case old cards still say blow
   Games.blow = Games.hug;
 
@@ -1466,13 +1589,12 @@
     }
     if (mode === "ready" || mode === "over" || mode === "clear") {
       startOrRetry();
-      if (active === "hug") Hug.setHugging(true);
       return;
     }
     if (!running) return;
     if (active === "stack") Stack.drop();
     if (active === "catch") Catch.pointerToLane(x);
-    if (active === "hug") Hug.setHugging(true);
+    if (active === "grow") Grow.startDash();
   });
 
   canvas.addEventListener("pointermove", (event) => {
@@ -1489,15 +1611,11 @@
     } catch {
       /* ignore */
     }
-    if (active === "hug" && running) Hug.setHugging(false);
   });
   canvas.addEventListener("pointercancel", () => {
     pointerDown = false;
-    if (active === "hug" && running) Hug.setHugging(false);
   });
-  // Do not cancel hug on pointerleave — scaled canvas easily loses hover while holding
   canvas.addEventListener("pointerleave", () => {
-    if (active === "hug") return;
     pointerDown = false;
   });
 
@@ -1518,24 +1636,23 @@
       event.preventDefault();
       if (mode === "ready" || mode === "over" || mode === "clear") startOrRetry();
       else if (active === "stack" && running) Stack.drop();
-      else if (active === "hug" && running) Hug.setHugging(true);
+      else if (active === "grow" && running) Grow.startDash();
     }
   });
 
   window.addEventListener("keyup", (event) => {
     keys.delete(event.key);
-    if (event.code === "Space" && active === "hug" && running) Hug.setHugging(false);
   });
 
   // Update hall card copy to match new mechanics
   const stackCard = document.querySelector('[data-game="stack"] em');
   const catchCard = document.querySelector('[data-game="catch"] em');
-  const hugCard = document.querySelector('[data-game="hug"] em');
-  const hugTitle = document.querySelector('[data-game="hug"] strong');
+  const growCard = document.querySelector('[data-game="grow"] em');
+  const growTitle = document.querySelector('[data-game="grow"] strong');
   if (stackCard) stackCard.textContent = "每一层都是 520 DIY 真实配方，叠稳才写进回忆";
   if (catchCard) catchCard.textContent = "风雨台风会吹歪车票，连击进入奔赴狂热";
-  if (hugCard) hugCard.textContent = "按住画布抱抱扛寒潮，松手回血攒「好暖」";
-  if (hugTitle) hugTitle.textContent = "冬夜好冷·抱抱取暖";
+  if (growCard) growCard.textContent = "大鱼吃小鱼玩法：吃到长十多斤，进化成小胖哥";
+  if (growTitle) growTitle.textContent = "小胖哥进化论";
   const stackTitle = document.querySelector('[data-game="stack"] strong');
   if (stackTitle) stackTitle.textContent = "520·DIY 奶油千层";
 
