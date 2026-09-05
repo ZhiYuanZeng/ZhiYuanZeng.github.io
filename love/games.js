@@ -27,13 +27,13 @@
     },
     catch: {
       title: "异地车票接接乐",
-      tip: "三车道接车票。连击进入「奔赴狂热」后分数翻倍！",
-      help: "←→ / A D / 鼠标切换车道 · 躲开加班堵车拖延",
+      tip: "接车票奔赴丫头。连击狂热翻倍；台风天风雨交加，车票会被吹歪！",
+      help: "←→ / A D / 鼠标换道 · 躲开加班堵车拖延台风 · 风雨里稳住",
     },
     hug: {
       title: "冬夜好冷·抱抱取暖",
-      tip: "那天他说「好冷」，你紧紧抱住了他。按住取暖，松手回血，别让寒风冻住这一晚。",
-      help: "按住空格或鼠标拥抱取暖 · 体力会耗尽，松手恢复 · 扛过寒潮攒「好暖」",
+      tip: "按住画布不放来抱抱！约 1 秒后寒潮来袭，把寒意压下去就记一次「好暖」。",
+      help: "按住画布或空格拥抱 · 松手恢复体力 · 寒潮时抱紧才得分",
     },
   };
 
@@ -257,7 +257,9 @@
   }
 
   function openGame(id) {
-    active = id;
+    const game = Games[id] || (id === "blow" ? Games.hug : null);
+    if (!game) return;
+    active = game === Games.hug ? "hug" : id;
     mode = "ready";
     running = false;
     score = 0;
@@ -266,16 +268,17 @@
     juice.particles = [];
     juice.floats = [];
     juice.banner = null;
-    titleEl.textContent = META[id].title;
-    tip.textContent = META[id].tip;
-    helpEl.textContent = META[id].help;
+    const meta = META[active] || META.hug;
+    titleEl.textContent = meta.title;
+    tip.textContent = meta.tip;
+    helpEl.textContent = meta.help;
     actionBtn.textContent = "开始冒险";
     stage.hidden = false;
     document.body.style.overflow = "hidden";
     stats.plays = (stats.plays || 0) + 1;
     saveStats();
     renderHallStats();
-    Games[id].reset();
+    Games[active].reset();
     drawFrame(0);
   }
 
@@ -619,11 +622,12 @@
     return { reset, update, draw, drop };
   })();
 
-  // ========== CATCH (3 lanes) ==========
+  // ========== CATCH (3 lanes + weather) ==========
   const Catch = (() => {
     const LANES = [W * 0.22, W * 0.5, W * 0.78];
     const CITIES = ["天津", "北京", "上海", "南昌"];
-    const BAD = ["加班", "堵车", "拖延"];
+    const BAD = ["加班", "堵车", "拖延", "晚点", "停运"];
+    const GOAL = 14;
     let lane = 1;
     let displayX = LANES[1];
     let items = [];
@@ -632,7 +636,15 @@
     let caught = 0;
     let fever = 0;
     let bob = 0;
-    const GOAL = 14;
+    // weather: 0 clear, 1 rain, 2 typhoon
+    let weather = 0;
+    let weatherTimer = 0;
+    let weatherDur = 0;
+    let windDir = 1;
+    let rain = [];
+    let gusts = [];
+    let flashSky = 0;
+    let umbrella = 0;
 
     const reset = () => {
       lane = 1;
@@ -643,41 +655,187 @@
       caught = 0;
       fever = 0;
       bob = 0;
+      weather = 0;
+      weatherTimer = 2.2 + Math.random() * 1.2;
+      weatherDur = 0;
+      windDir = Math.random() > 0.5 ? 1 : -1;
+      flashSky = 0;
+      umbrella = 0;
+      rain = Array.from({ length: 70 }, () => makeDrop());
+      gusts = [];
+    };
+
+    const makeDrop = () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      len: 8 + Math.random() * 14,
+      vy: 380 + Math.random() * 220,
+      vx: -40 + Math.random() * 20,
+    });
+
+    const setWeather = (next) => {
+      weather = next;
+      weatherDur = next === 0 ? 0 : next === 1 ? 5.5 + Math.random() * 2 : 6.5 + Math.random() * 2.5;
+      weatherTimer = next === 0 ? 3.5 + Math.random() * 2.5 : 0;
+      windDir = Math.random() > 0.5 ? 1 : -1;
+      if (next === 1) {
+        tip.textContent = "起风下雨了…车票有点飘，小心接稳";
+        showBanner("小雨 · 风雨兼程", "#8ec5ff");
+        blip(300, 0.08, "sine", 0.03);
+      } else if (next === 2) {
+        tip.textContent = "台风来了！车票会被吹歪，躲开「台风」警报";
+        showBanner("台风天 · 仍要奔赴", "#ff9f1c");
+        punch(8);
+        flashSky = 0.55;
+        flashScreen(0.18);
+        blip(120, 0.15, "sawtooth", 0.05);
+        for (let i = 0; i < 4; i += 1) {
+          gusts.push({ y: 40 + Math.random() * (H - 80), life: 0.8 + Math.random() * 0.6, dir: windDir });
+        }
+      } else {
+        tip.textContent = "天晴了，继续接车票去见丫头";
+        showBanner("天晴 · 路更稳", "#ffd84d");
+      }
     };
 
     const spawnItem = () => {
-      const good = Math.random() > 0.3;
-      items.push({
-        lane: Math.floor(Math.random() * 3),
-        y: -40,
-        vy: 220 + Math.random() * 90 + caught * 8,
-        label: good ? CITIES[Math.floor(Math.random() * CITIES.length)] : BAD[Math.floor(Math.random() * BAD.length)],
-        good,
-        rot: Math.random() * 0.4 - 0.2,
-        spin: (Math.random() - 0.5) * 2,
-      });
+      let kind = "ticket";
+      const roll = Math.random();
+      if (weather === 2 && roll < 0.18) kind = "typhoon";
+      else if (roll < 0.28) kind = "bad";
+      else if (weather >= 1 && roll < 0.36) kind = "bad";
+
+      if (kind === "ticket") {
+        items.push({
+          type: "ticket",
+          lane: Math.floor(Math.random() * 3),
+          y: -40,
+          vy: 210 + Math.random() * 90 + caught * 8 + (weather === 2 ? 60 : weather === 1 ? 25 : 0),
+          label: CITIES[Math.floor(Math.random() * CITIES.length)],
+          good: true,
+          rot: Math.random() * 0.4 - 0.2,
+          spin: (Math.random() - 0.5) * 2,
+          drift: 0,
+        });
+      } else if (kind === "typhoon") {
+        items.push({
+          type: "typhoon",
+          lane: Math.floor(Math.random() * 3),
+          y: -50,
+          vy: 160 + Math.random() * 40,
+          label: "台风",
+          good: false,
+          rot: 0,
+          spin: 4,
+          drift: 0,
+        });
+      } else {
+        items.push({
+          type: "bad",
+          lane: Math.floor(Math.random() * 3),
+          y: -40,
+          vy: 230 + Math.random() * 80 + caught * 6,
+          label: BAD[Math.floor(Math.random() * BAD.length)],
+          good: false,
+          rot: Math.random() * 0.3 - 0.15,
+          spin: (Math.random() - 0.5) * 2,
+          drift: 0,
+        });
+      }
     };
 
     const moveLane = (delta) => {
       lane = Math.max(0, Math.min(2, lane + delta));
     };
 
+    const hitHazard = (item) => {
+      lives -= 1;
+      resetCombo();
+      fever = 0;
+      setHud();
+      tip.textContent = item.type === "typhoon" ? "被台风卷走了…抓紧栏杆！" : `糟糕，撞上「${item.label}」`;
+      punch(item.type === "typhoon" ? 16 : 12);
+      flashScreen(0.22);
+      burst(LANES[item.lane], item.y, "#ff4d6d", 14);
+      blip(140, 0.12, "sawtooth", 0.05);
+      if (item.type === "typhoon") {
+        weather = 2;
+        weatherDur = Math.max(weatherDur, 3);
+        flashSky = 0.4;
+      }
+      if (lives <= 0) endGame(false);
+    };
+
     const update = (dt) => {
       bob += dt * 8;
       fever = Math.max(0, fever - dt);
+      flashSky = Math.max(0, flashSky - dt * 1.4);
+      umbrella = Math.max(0, umbrella - dt);
+
+      if (weather > 0) {
+        weatherDur -= dt;
+        if (weatherDur <= 0) setWeather(weather === 2 ? 1 : 0);
+      } else {
+        weatherTimer -= dt;
+        if (weatherTimer <= 0) setWeather(Math.random() > 0.45 ? 2 : 1);
+      }
+
+      // rain / wind particles
+      const wind = weather === 2 ? windDir * 220 : weather === 1 ? windDir * 70 : 0;
+      rain.forEach((d) => {
+        d.vy = weather === 2 ? 560 + Math.random() * 80 : weather === 1 ? 420 : 200;
+        d.vx = wind * 0.35 + (weather === 2 ? windDir * 80 : weather === 1 ? windDir * 25 : -10);
+        d.y += d.vy * dt;
+        d.x += d.vx * dt;
+        if (d.y > H + 20) {
+          d.y = -20;
+          d.x = Math.random() * W;
+        }
+        if (d.x < -30) d.x = W + 20;
+        if (d.x > W + 30) d.x = -20;
+      });
+      gusts = gusts.filter((g) => {
+        g.life -= dt;
+        g.y += Math.sin(bob + g.y) * 10 * dt;
+        return g.life > 0;
+      });
+      if (weather === 2 && Math.random() < dt * 1.2) {
+        gusts.push({ y: 30 + Math.random() * (H - 60), life: 0.5 + Math.random() * 0.5, dir: windDir });
+        if (Math.random() < 0.25) flashSky = Math.max(flashSky, 0.35);
+      }
+
       spawn -= dt;
       if (spawn <= 0) {
         spawnItem();
-        spawn = Math.max(0.38, 0.95 - caught * 0.025);
-      }
-      if (keys.has("ArrowLeft") || keys.has("a") || keys.has("A")) {
-        // handled on keydown for discrete lanes
+        const base = weather === 2 ? 0.55 : weather === 1 ? 0.72 : 0.95;
+        spawn = Math.max(0.32, base - caught * 0.025);
       }
       displayX += (LANES[lane] - displayX) * Math.min(1, dt * 14);
 
       items.forEach((item) => {
         item.y += item.vy * dt;
         item.rot += item.spin * dt;
+        // wind blows tickets across lanes gradually
+        if (weather >= 1 && item.good) {
+          item.drift += windDir * (weather === 2 ? 55 : 22) * dt;
+          if (Math.abs(item.drift) > 55) {
+            const next = Math.max(0, Math.min(2, item.lane + (item.drift > 0 ? 1 : -1)));
+            if (next !== item.lane) {
+              item.lane = next;
+              item.drift = 0;
+              floatText(LANES[item.lane], item.y, "被风吹偏", "#8ec5ff");
+            } else {
+              item.drift = Math.sign(item.drift) * 40;
+            }
+          }
+        }
+        if (item.type === "typhoon") {
+          item.spin = 5;
+          // slowly chase player lane
+          if (Math.random() < dt * 1.5) {
+            item.lane = Math.max(0, Math.min(2, item.lane + (lane > item.lane ? 1 : lane < item.lane ? -1 : 0)));
+          }
+        }
       });
 
       items = items.filter((item) => {
@@ -686,27 +844,22 @@
           if (item.good) {
             caught += 1;
             const multi = fever > 0 ? 2 : 1;
+            const stormBonus = weather === 2 ? 40 : weather === 1 ? 15 : 0;
             bumpCombo(1);
             if (combo >= 5) fever = 3.2;
-            addScore((70 + combo * 8) * multi, LANES[item.lane], item.y, multi > 1 ? "狂热×2" : `车票+`);
+            addScore((70 + combo * 8 + stormBonus) * multi, LANES[item.lane], item.y, weather === 2 ? "风雨奔赴+" : multi > 1 ? "狂热×2" : "车票+");
             tip.textContent =
               fever > 0
                 ? `奔赴狂热中！(${caught}/${GOAL})`
-                : `接到「${item.label}」· ${caught}/${GOAL}`;
+                : weather === 2
+                  ? `台风里仍接到「${item.label}」· ${caught}/${GOAL}`
+                  : `接到「${item.label}」· ${caught}/${GOAL}`;
             burst(LANES[item.lane], item.y, "#ffd84d", 12);
             blip(multi > 1 ? 920 : 640, 0.06, "square");
+            umbrella = 0.8;
             if (caught >= GOAL) endGame(true);
           } else {
-            lives -= 1;
-            resetCombo();
-            fever = 0;
-            setHud();
-            tip.textContent = `糟糕，撞上「${item.label}」`;
-            punch(12);
-            flashScreen(0.2);
-            burst(LANES[item.lane], item.y, "#ff4d6d", 14);
-            blip(140, 0.12, "sawtooth", 0.05);
-            if (lives <= 0) endGame(false);
+            hitHazard(item);
           }
           return false;
         }
@@ -716,7 +869,7 @@
             resetCombo();
             fever = 0;
             setHud();
-            tip.textContent = "车票飞出站台了…";
+            tip.textContent = weather >= 1 ? "车票被风雨卷走了…" : "车票飞出站台了…";
             punch(6);
             if (lives <= 0) endGame(false);
           }
@@ -727,16 +880,43 @@
     };
 
     const draw = (g) => {
+      const storm = weather === 2;
+      const rainy = weather >= 1;
       const grad = g.createLinearGradient(0, 0, 0, H);
-      grad.addColorStop(0, fever > 0 ? "#3a2208" : "#0c1c2e");
-      grad.addColorStop(0.55, fever > 0 ? "#5a2e08" : "#14324a");
-      grad.addColorStop(1, fever > 0 ? "#8a4a10" : "#1a4058");
+      if (fever > 0 && !storm) {
+        grad.addColorStop(0, "#3a2208");
+        grad.addColorStop(0.55, "#5a2e08");
+        grad.addColorStop(1, "#8a4a10");
+      } else if (storm) {
+        grad.addColorStop(0, "#0a1220");
+        grad.addColorStop(0.5, "#1a2840");
+        grad.addColorStop(1, "#24344a");
+      } else if (rainy) {
+        grad.addColorStop(0, "#0c1828");
+        grad.addColorStop(1, "#1a3550");
+      } else {
+        grad.addColorStop(0, "#0c1c2e");
+        grad.addColorStop(0.55, "#14324a");
+        grad.addColorStop(1, "#1a4058");
+      }
       g.fillStyle = grad;
       g.fillRect(0, 0, W, H);
-      drawStars(g, fever > 0 ? "rgba(255,216,77,0.45)" : "rgba(180,220,255,0.35)");
+      if (!rainy) drawStars(g, fever > 0 ? "rgba(255,216,77,0.45)" : "rgba(180,220,255,0.35)");
 
-      // city skyline silhouette
-      g.fillStyle = "rgba(0,0,0,0.28)";
+      // heavy clouds
+      if (rainy) {
+        g.fillStyle = storm ? "rgba(20,28,40,0.7)" : "rgba(40,55,75,0.45)";
+        for (let i = 0; i < 6; i += 1) {
+          const cx = ((i * 170 + bob * (storm ? 90 : 40) * windDir) % (W + 200)) - 100;
+          g.beginPath();
+          g.ellipse(cx, 36 + (i % 3) * 10, 90, 28, 0, 0, Math.PI * 2);
+          g.ellipse(cx + 40, 28, 70, 24, 0, 0, Math.PI * 2);
+          g.fill();
+        }
+      }
+
+      // city skyline
+      g.fillStyle = "rgba(0,0,0,0.32)";
       [40, 90, 150, 210, 280, 340, 420, 500, 580, 660, 740, 820].forEach((x, i) => {
         const h = 40 + ((i * 37) % 90);
         g.fillRect(x, H - 56 - h, 48, h);
@@ -754,7 +934,6 @@
         g.moveTo(x + 72, 0);
         g.lineTo(x + 72, H);
         g.stroke();
-        // rails
         g.strokeStyle = "rgba(180,210,230,0.25)";
         g.lineWidth = 3;
         g.beginPath();
@@ -776,54 +955,63 @@
       g.fillRect(0, H - 58, W, 10);
       g.fillStyle = "#ffd84d";
       g.fillRect(0, H - 50, W, 3);
+      if (rainy) {
+        g.fillStyle = "rgba(140,200,255,0.2)";
+        g.fillRect(0, H - 48, W, 8);
+      }
 
-      // player — chubby traveler
+      // player
       const px = displayX;
-      const py = H - 118 + Math.sin(bob) * 3;
+      const py = H - 118 + Math.sin(bob) * 3 + (storm ? Math.sin(bob * 12) * 2 : 0);
       g.save();
       g.translate(px, py);
-      // body
       g.fillStyle = fever > 0 ? "#ffd84d" : "#ffb703";
       roundRect(g, -34, 18, 68, 52, 20);
       g.fill();
-      // backpack
       g.fillStyle = "#e85a95";
       roundRect(g, 22, 24, 18, 34, 6);
       g.fill();
-      // head
       g.fillStyle = "#f6c7a1";
       g.beginPath();
       g.arc(0, 8, 22, 0, Math.PI * 2);
       g.fill();
-      // hair
       g.fillStyle = "#3b2218";
       g.beginPath();
       g.ellipse(0, -6, 20, 12, 0, Math.PI, 0);
       g.fill();
-      // eyes
       g.fillStyle = "#2a1200";
       g.beginPath();
       g.arc(-7, 8, 2.8, 0, Math.PI * 2);
       g.arc(7, 8, 2.8, 0, Math.PI * 2);
       g.fill();
-      // blush
       g.fillStyle = "rgba(255,120,150,0.45)";
       g.beginPath();
       g.ellipse(-12, 14, 5, 3, 0, 0, Math.PI * 2);
       g.ellipse(12, 14, 5, 3, 0, 0, Math.PI * 2);
       g.fill();
-      // smile
       g.strokeStyle = "#2a1200";
       g.lineWidth = 2;
       g.beginPath();
       g.arc(0, 12, 8, 0.15 * Math.PI, 0.85 * Math.PI);
       g.stroke();
-      // arms
       g.fillStyle = fever > 0 ? "#ffd84d" : "#ffb703";
       roundRect(g, -48, 28, 16, 28, 8);
       g.fill();
       roundRect(g, 32, 28, 16, 28, 8);
       g.fill();
+      // umbrella in rain
+      if (rainy) {
+        g.fillStyle = "#e85a95";
+        g.beginPath();
+        g.ellipse(-8, -18, 34, 14, -0.2 * windDir, Math.PI, 0);
+        g.fill();
+        g.strokeStyle = "#5d1738";
+        g.lineWidth = 2;
+        g.beginPath();
+        g.moveTo(-8, -18);
+        g.lineTo(-8, 20);
+        g.stroke();
+      }
       g.fillStyle = "#fff";
       g.font = "bold 12px sans-serif";
       g.textAlign = "center";
@@ -831,24 +1019,38 @@
       g.restore();
 
       items.forEach((item) => {
-        const x = LANES[item.lane];
+        const x = LANES[item.lane] + (item.drift || 0) * 0.4;
         g.save();
         g.translate(x, item.y);
         g.rotate(item.rot);
-        if (item.good) {
-          // ticket card
+        if (item.type === "typhoon") {
+          g.strokeStyle = "rgba(255,180,80,0.85)";
+          g.lineWidth = 3;
+          for (let r = 10; r <= 36; r += 8) {
+            g.beginPath();
+            g.arc(0, 0, r, bob * 3, bob * 3 + Math.PI * 1.4);
+            g.stroke();
+          }
+          g.fillStyle = "#ff9f1c";
+          g.font = "bold 18px Songti SC, serif";
+          g.textAlign = "center";
+          g.fillText("台风", 0, 6);
+          g.fillStyle = "#fff";
+          g.font = "11px sans-serif";
+          g.fillText("躲开！", 0, 24);
+        } else if (item.good) {
           g.fillStyle = "#fff8ef";
           roundRect(g, -54, -26, 108, 52, 10);
           g.fill();
-          g.strokeStyle = "#ff6a00";
+          g.strokeStyle = weather === 2 ? "#3aa0ff" : "#ff6a00";
           g.lineWidth = 3;
           g.stroke();
-          g.fillStyle = "#ff6a00";
+          g.fillStyle = weather === 2 ? "#3aa0ff" : "#ff6a00";
           g.fillRect(-54, -26, 108, 14);
           g.fillStyle = "#fff";
           g.font = "bold 11px sans-serif";
           g.textAlign = "center";
-          g.fillText("高铁票 · 奔赴", 0, -15);
+          g.fillText(weather >= 1 ? "风雨票 · 奔赴" : "高铁票 · 奔赴", 0, -15);
           g.fillStyle = "#2a1200";
           g.font = "bold 20px Songti SC, serif";
           g.fillText(item.label, 0, 12);
@@ -856,7 +1058,6 @@
           g.font = "10px monospace";
           g.fillText("→ 丫头", 0, 26);
         } else {
-          // hazard sign
           g.fillStyle = "#ff4d6d";
           roundRect(g, -46, -24, 92, 48, 10);
           g.fill();
@@ -873,15 +1074,47 @@
         g.restore();
       });
 
+      // rain overlay
+      if (rainy) {
+        g.strokeStyle = storm ? "rgba(180,210,255,0.55)" : "rgba(170,200,240,0.4)";
+        g.lineWidth = storm ? 1.6 : 1.1;
+        rain.forEach((d) => {
+          g.beginPath();
+          g.moveTo(d.x, d.y);
+          g.lineTo(d.x + d.vx * 0.04, d.y + d.len);
+          g.stroke();
+        });
+      }
+      // wind ribbons
+      gusts.forEach((gust) => {
+        g.globalAlpha = Math.max(0, gust.life);
+        g.strokeStyle = "#b8d4ff";
+        g.lineWidth = 2;
+        g.beginPath();
+        const gx = gust.dir > 0 ? -40 : W + 40;
+        g.moveTo(gx, gust.y);
+        g.bezierCurveTo(gx + gust.dir * 180, gust.y - 20, gx + gust.dir * 360, gust.y + 24, gx + gust.dir * 520, gust.y);
+        g.stroke();
+      });
+      g.globalAlpha = 1;
+
+      if (flashSky > 0) {
+        g.fillStyle = `rgba(220,235,255,${flashSky * 0.55})`;
+        g.fillRect(0, 0, W, H);
+      }
+
       g.fillStyle = "#ffd84d";
       g.font = "bold 16px SFMono-Regular, monospace";
       g.textAlign = "left";
       g.fillText(`命 ${"♥".repeat(lives)}${"♡".repeat(3 - lives)}`, 20, 30);
       g.fillText(`车票 ${caught}/${GOAL}`, 20, 54);
+      const weatherLabel = storm ? "🌪 台风天" : rainy ? "🌧 风雨中" : "☀ 晴朗";
+      g.fillStyle = storm ? "#ff9f1c" : rainy ? "#8ec5ff" : "#ffd84d";
+      g.fillText(weatherLabel, 20, 78);
       if (fever > 0) {
         g.fillStyle = "#ff9f1c";
         g.font = "bold 18px Songti SC, serif";
-        g.fillText(`✦ 奔赴狂热 ${fever.toFixed(1)}s`, 20, 80);
+        g.fillText(`✦ 奔赴狂热 ${fever.toFixed(1)}s`, 20, 104);
       }
     };
 
@@ -924,12 +1157,12 @@
       hugging = false;
       warm = 0;
       wind = 0;
-      windCd = 2.2;
+      windCd = 0.9;
       bob = 0;
       hugPulse = 0;
       needHug = false;
       savedFromWind = false;
-      speech = { text: "好冷…", life: 1.6 };
+      speech = { text: "好冷…快抱抱我", life: 1.8 };
       snow = Array.from({ length: 46 }, () => ({
         x: Math.random() * W,
         y: Math.random() * H,
@@ -945,12 +1178,16 @@
       if (on && stamina < 6) {
         tip.textContent = "体力空了，先松手回血再抱";
         blip(160, 0.06, "sawtooth", 0.04);
+        hugging = false;
         return;
       }
-      hugging = on && stamina > 0;
-      if (hugging) {
-        speech = { text: "我抱着你", life: 1.2 };
+      const was = hugging;
+      hugging = !!(on && stamina > 0);
+      if (hugging && !was) {
+        speech = { text: "我抱着你", life: 1.4 };
+        tip.textContent = needHug ? "寒潮里抱紧！把寒意压下去" : "紧紧抱住中…松手可恢复体力";
         blip(420, 0.05, "sine", 0.03);
+        hugPulse = 0.6;
       }
     };
 
@@ -985,6 +1222,11 @@
       windCd -= dt;
       speech.life = Math.max(0, speech.life - dt);
 
+      // Sync hold input every frame (pointer capture + space)
+      const held = pointerDown || keys.has(" ");
+      if (held) setHugging(true);
+      else if (hugging) setHugging(false);
+
       if (windCd <= 0) {
         wind = 1.8 + Math.random() * 0.7;
         windCd = 3.4 + Math.random() * 1.6;
@@ -992,7 +1234,7 @@
         needHug = true;
         savedFromWind = false;
         speech = { text: Math.random() > 0.5 ? "好冷！" : "风好大…", life: 1.4 };
-        tip.textContent = "寒潮来了！按住抱抱，把寒意压下去";
+        tip.textContent = "寒潮来了！按住画布抱抱，把寒意压下去";
         punch(6);
         blip(180, 0.1, "sawtooth", 0.045);
       }
@@ -1001,7 +1243,7 @@
       if (hugging && stamina > 0) {
         stamina = Math.max(0, stamina - 26 * dt);
         chill = Math.max(0, chill - (42 + (wind > 0 ? 14 : 0)) * dt);
-        hugPulse = 0.5;
+        hugPulse = Math.max(hugPulse, 0.35);
         if (stamina <= 0) {
           hugging = false;
           tip.textContent = "抱抱太久也累，松手喘口气";
@@ -1193,7 +1435,9 @@
     return { reset, update, draw, setHugging };
   })();
 
-  const Games = { stack: Stack, catch: Catch, hug: Hug };
+  const Games = { stack: Stack, catch: Catch, hug: Hug, blow: null };
+  // alias in case old cards still say blow
+  Games.blow = Games.hug;
 
 
   function canvasPos(event) {
@@ -1215,8 +1459,14 @@
     pointerDown = true;
     pointerX = x;
     pointerY = y;
+    try {
+      canvas.setPointerCapture(event.pointerId);
+    } catch {
+      /* ignore */
+    }
     if (mode === "ready" || mode === "over" || mode === "clear") {
       startOrRetry();
+      if (active === "hug") Hug.setHugging(true);
       return;
     }
     if (!running) return;
@@ -1232,12 +1482,22 @@
     if (active === "catch" && (running || mode === "play")) Catch.pointerToLane(x);
   });
 
-  canvas.addEventListener("pointerup", () => {
+  canvas.addEventListener("pointerup", (event) => {
+    pointerDown = false;
+    try {
+      canvas.releasePointerCapture(event.pointerId);
+    } catch {
+      /* ignore */
+    }
+    if (active === "hug" && running) Hug.setHugging(false);
+  });
+  canvas.addEventListener("pointercancel", () => {
     pointerDown = false;
     if (active === "hug" && running) Hug.setHugging(false);
   });
+  // Do not cancel hug on pointerleave — scaled canvas easily loses hover while holding
   canvas.addEventListener("pointerleave", () => {
-    if (active === "hug" && running && pointerDown) Hug.setHugging(false);
+    if (active === "hug") return;
     pointerDown = false;
   });
 
@@ -1273,8 +1533,8 @@
   const hugCard = document.querySelector('[data-game="hug"] em');
   const hugTitle = document.querySelector('[data-game="hug"] strong');
   if (stackCard) stackCard.textContent = "每一层都是 520 DIY 真实配方，叠稳才写进回忆";
-  if (catchCard) catchCard.textContent = "三车道接车票，连击触发奔赴狂热翻倍分";
-  if (hugCard) hugCard.textContent = "按住抱抱扛寒潮，松手回血，攒满「好暖」";
+  if (catchCard) catchCard.textContent = "风雨台风会吹歪车票，连击进入奔赴狂热";
+  if (hugCard) hugCard.textContent = "按住画布抱抱扛寒潮，松手回血攒「好暖」";
   if (hugTitle) hugTitle.textContent = "冬夜好冷·抱抱取暖";
   const stackTitle = document.querySelector('[data-game="stack"] strong');
   if (stackTitle) stackTitle.textContent = "520·DIY 奶油千层";
