@@ -621,17 +621,6 @@ body.is-locked #music-player {
   transition: transform 0.25s ease-out;
 }
 
-.hero__portrait::after {
-  position: absolute;
-  top: 31%;
-  left: 0;
-  width: 100%;
-  height: 1px;
-  background: rgba(141, 229, 225, 0.88);
-  box-shadow: 0 0 12px var(--cyan);
-  content: "";
-}
-
 .hero__portrait img {
   width: 100%;
   height: 100%;
