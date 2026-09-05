@@ -285,7 +285,6 @@ reasonButtons.forEach((button) => {
 });
 
 const caseSection = document.querySelector("#case-file");
-const caseChips = [...document.querySelectorAll("[data-case-chip]")];
 const caseFolder = document.querySelector("#case-folder");
 const caseFolderList = document.querySelector("#case-folder-list");
 const caseCount = document.querySelector("#case-count");
@@ -293,32 +292,68 @@ const caseHint = document.querySelector("#case-hint");
 const caseVerdict = document.querySelector("#case-verdict");
 const caseStamp = document.querySelector("#case-stamp");
 const caseToLetter = document.querySelector("#case-to-letter");
-const CASE_STORAGE_KEY = "museum-case-closed";
-const caseFiled = new Set();
+const caseQuizStep = document.querySelector("#case-quiz-step");
+const caseQuizQuestion = document.querySelector("#case-quiz-question");
+const caseQuizOptions = document.querySelector("#case-quiz-options");
+const CASE_STORAGE_KEY = "museum-case-quiz-v2";
 const reduceCaseMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
-const fileCaseChip = (chip) => {
-  const id = chip.dataset.caseChip;
-  if (caseFiled.has(id) || caseSection.classList.contains("is-complete")) return;
+const caseQuestions = [
+  {
+    question: "第一次坐摩天轮，是在哪里？",
+    answer: "天津",
+    options: ["天津", "北京", "上海", "南昌"],
+    filed: "天津摩天轮",
+    wrong: "证据链对不上。再想想第一段异地附近。",
+  },
+  {
+    question: "第一次去学校外面约会，吃的是什么？",
+    answer: "必胜客",
+    options: ["必胜客", "海底捞", "麦当劳", "学校门口麻辣烫"],
+    filed: "校外第一顿 · 必胜客",
+    wrong: "味道对不上。不是火锅，也不是速食柜台。",
+  },
+  {
+    question: "小哥做过一个积木模型送给丫头，是什么？",
+    answer: "宇航员",
+    options: ["宇航员", "火箭", "埃菲尔铁塔", "小汽车"],
+    filed: "宇航员积木",
+    wrong: "型号不对。再想想那个穿着宇航服的小人。",
+  },
+  {
+    question: "在上海的时候，最经常逛的超市是？",
+    answer: "奥乐齐",
+    options: ["奥乐齐", "盒马", "永辉", "山姆会员店"],
+    filed: "上海常去 · 奥乐齐",
+    wrong: "这家太贵或太远了。想想那家德国折扣超市。",
+  },
+];
 
-  caseFiled.add(id);
-  chip.classList.add("is-filed");
-  chip.setAttribute("aria-disabled", "true");
+let caseIndex = 0;
+let caseBusy = false;
+
+const shuffleOptions = (options) => {
+  const copy = [...options];
+  for (let index = copy.length - 1; index > 0; index -= 1) {
+    const swap = Math.floor(Math.random() * (index + 1));
+    [copy[index], copy[swap]] = [copy[swap], copy[index]];
+  }
+  return copy;
+};
+
+const appendFiledClue = (label) => {
+  const item = document.createElement("li");
+  item.textContent = label;
+  caseFolderList.append(item);
+  caseCount.textContent = String(caseFolderList.children.length);
   caseFolder.classList.add("is-receiving");
   window.setTimeout(() => caseFolder.classList.remove("is-receiving"), 320);
-
-  const item = document.createElement("li");
-  item.textContent = chip.querySelector("strong").textContent;
-  caseFolderList.append(item);
-  caseCount.textContent = String(caseFiled.size);
-
-  if (caseFiled.size === caseChips.length) sealCaseFile();
 };
 
 const sealCaseFile = () => {
   caseSection.classList.add("is-complete");
   caseFolder.classList.add("is-sealed");
-  caseHint.textContent = "证物已收齐 · 正在生成结案书";
+  caseHint.textContent = "四道私证全部对上 · 正在生成结案书";
   caseVerdict.hidden = false;
   sessionStorage.setItem(CASE_STORAGE_KEY, "yes");
 
@@ -329,16 +364,56 @@ const sealCaseFile = () => {
   }, stampDelay);
 };
 
-const restoreCaseFile = () => {
-  caseChips.forEach((chip) => {
-    caseFiled.add(chip.dataset.caseChip);
-    chip.classList.add("is-filed");
-    chip.setAttribute("aria-disabled", "true");
-    const item = document.createElement("li");
-    item.textContent = chip.querySelector("strong").textContent;
-    caseFolderList.append(item);
+const renderCaseQuestion = () => {
+  const item = caseQuestions[caseIndex];
+  caseBusy = false;
+  caseQuizStep.textContent = String(caseIndex + 1).padStart(2, "0");
+  caseQuizQuestion.textContent = item.question;
+  caseHint.textContent = `第 ${caseIndex + 1} 题 · 选一个答案。选错可以重来，不扣分。`;
+  caseQuizOptions.replaceChildren();
+
+  shuffleOptions(item.options).forEach((label) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "case-option";
+    button.textContent = label;
+    button.addEventListener("click", () => answerCaseQuestion(label, button));
+    caseQuizOptions.append(button);
   });
-  caseCount.textContent = String(caseChips.length);
+};
+
+const answerCaseQuestion = (label, button) => {
+  if (caseBusy || caseSection.classList.contains("is-complete")) return;
+  const item = caseQuestions[caseIndex];
+
+  if (label !== item.answer) {
+    button.classList.remove("is-wrong");
+    void button.offsetWidth;
+    button.classList.add("is-wrong");
+    caseHint.textContent = item.wrong;
+    return;
+  }
+
+  caseBusy = true;
+  button.classList.add("is-correct");
+  [...caseQuizOptions.children].forEach((option) => {
+    option.disabled = true;
+  });
+  caseHint.textContent = "证据吻合 · 已收入档案袋";
+  appendFiledClue(item.filed);
+
+  window.setTimeout(() => {
+    caseIndex += 1;
+    if (caseIndex >= caseQuestions.length) {
+      sealCaseFile();
+      return;
+    }
+    renderCaseQuestion();
+  }, reduceCaseMotion.matches ? 200 : 700);
+};
+
+const restoreCaseFile = () => {
+  caseQuestions.forEach((item) => appendFiledClue(item.filed));
   caseSection.classList.add("is-complete");
   caseFolder.classList.add("is-sealed");
   caseHint.textContent = "本案已结 · 可随时回看结案书";
@@ -346,16 +421,14 @@ const restoreCaseFile = () => {
   caseStamp.classList.add("is-struck");
 };
 
-caseChips.forEach((chip) => {
-  chip.addEventListener("click", () => fileCaseChip(chip));
-});
-
 caseToLetter?.addEventListener("click", () => {
   document.querySelector(".letter")?.scrollIntoView({ behavior: "smooth", block: "start" });
 });
 
 if (sessionStorage.getItem(CASE_STORAGE_KEY) === "yes") {
   restoreCaseFile();
+} else {
+  renderCaseQuestion();
 }
 
 const openLetterButton = document.querySelector("#open-letter");
