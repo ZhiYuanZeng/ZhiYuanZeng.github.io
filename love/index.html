@@ -506,6 +506,76 @@
         </div>
       </section>
 
+      <section id="case-file" class="case-file section" aria-labelledby="case-file-title">
+        <div class="section__heading reveal">
+          <p class="utility">CASE CLOSING · № 1229</p>
+          <h2 id="case-file-title">档案室结案</h2>
+          <p>前面的故事都看过了。这里不再考你，只请你把散落的证物收进档案袋 —— 然后盖章。</p>
+        </div>
+
+        <div class="case-file__stage reveal" id="case-stage">
+          <p class="case-file__hint" id="case-hint">点击桌上的证物，收进右侧档案袋。不必配对，收齐即可。</p>
+
+          <div class="case-file__desk">
+            <div class="case-file__evidence" id="case-evidence" aria-label="待归档证物">
+              <button type="button" class="case-chip" data-case-chip="0">
+                <span>证物 A</span>
+                <strong>寒风初吻</strong>
+              </button>
+              <button type="button" class="case-chip" data-case-chip="1">
+                <span>证物 B</span>
+                <strong>奶油千层</strong>
+              </button>
+              <button type="button" class="case-chip" data-case-chip="2">
+                <span>证物 C</span>
+                <strong>异地车票</strong>
+              </button>
+              <button type="button" class="case-chip" data-case-chip="3">
+                <span>证物 D</span>
+                <strong>订婚约定</strong>
+              </button>
+            </div>
+
+            <div class="case-folder" id="case-folder" aria-live="polite">
+              <div class="case-folder__flap" aria-hidden="true"></div>
+              <div class="case-folder__body">
+                <p class="utility">ARCHIVE BAG</p>
+                <strong>第 1229 号档案袋</strong>
+                <ol id="case-folder-list" class="case-folder__list"></ol>
+                <p class="case-folder__count"><span id="case-count">0</span> / 4 已归档</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="case-verdict" id="case-verdict" hidden>
+            <article class="case-dossier" id="case-dossier">
+              <header>
+                <p class="utility">CONFIDENTIAL · CLOSING REPORT</p>
+                <h3>心动案件结案书</h3>
+              </header>
+              <dl>
+                <div><dt>案号</dt><dd>CASE № 1229</dd></div>
+                <div><dt>当事人</dt><dd>丫头 · 小胖哥</dd></div>
+                <div><dt>立案</dt><dd>2020.12.29</dd></div>
+                <div><dt>证物</dt><dd>初吻 · 千层 · 车票 · 订婚</dd></div>
+              </dl>
+              <p class="case-dossier__finding">
+                经档案室复核：喜欢是蓄意的，奔赴是预谋的，余生已写入执行条款。
+              </p>
+              <p class="case-dossier__sentence">
+                判决如下：刑期——余生；执行方式——相濡以沫。
+              </p>
+              <div class="case-stamp" id="case-stamp" aria-hidden="true">
+                <span>心动属实</span>
+                <em>期限：永久</em>
+              </div>
+            </article>
+            <p class="case-verdict__note" id="case-verdict-note">结案章已盖下。可以拆开后面的信了。</p>
+            <button id="case-to-letter" class="case-file__cta" type="button">领取结案书，去拆信</button>
+          </div>
+        </div>
+      </section>
+
       <section class="letter section">
         <div class="letter__envelope reveal">
           <div class="letter__flap" aria-hidden="true"><span>♡</span></div>
