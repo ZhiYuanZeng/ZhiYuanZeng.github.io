@@ -1144,22 +1144,22 @@
       { at: 10, name: "小胖哥", note: "定格成小胖哥" },
     ];
     const FOODS = [
-      { label: "锅包肉", color: "#ff8a3c", gain: 3.2, r: 40 },
-      { label: "必胜客", color: "#ff5a5f", gain: 2.4, r: 33 },
-      { label: "奶油千层", color: "#ff9ec0", gain: 2.2, r: 31 },
-      { label: "火锅", color: "#e63946", gain: 3.6, r: 44 },
-      { label: "烤冷面", color: "#f4a261", gain: 1.6, r: 25 },
-      { label: "奶茶", color: "#d8a06a", gain: 1.2, r: 20 },
-      { label: "小龙虾", color: "#ef476f", gain: 1.4, r: 23 },
-      { label: "糖葫芦", color: "#ff4d6d", gain: 0.9, r: 16 },
-      { label: "小蛋糕", color: "#ffc2d8", gain: 0.8, r: 15 },
+      { label: "锅包肉", icon: "🍖", color: "#ff8a3c", gain: 3.2, r: 40 },
+      { label: "必胜客", icon: "🍕", color: "#ff5a5f", gain: 2.4, r: 33 },
+      { label: "奶油千层", icon: "🍰", color: "#ff9ec0", gain: 2.2, r: 31 },
+      { label: "火锅", icon: "🍲", color: "#e63946", gain: 3.6, r: 44 },
+      { label: "烤冷面", icon: "🍜", color: "#f4a261", gain: 1.6, r: 25 },
+      { label: "奶茶", icon: "🧋", color: "#d8a06a", gain: 1.2, r: 20 },
+      { label: "小龙虾", icon: "🦞", color: "#ef476f", gain: 1.4, r: 23 },
+      { label: "糖葫芦", icon: "🍡", color: "#ff4d6d", gain: 0.9, r: 16 },
+      { label: "小蛋糕", icon: "🧁", color: "#ffc2d8", gain: 0.8, r: 15 },
     ];
     const DIETS = [
-      { label: "沙拉", color: "#57cc99" },
-      { label: "跑步机", color: "#4cc9f0" },
-      { label: "体重秤", color: "#8ec5ff" },
-      { label: "健身卡", color: "#7b5cff" },
-      { label: "代餐粉", color: "#48cae4" },
+      { label: "沙拉", icon: "🥗", color: "#57cc99" },
+      { label: "跑步机", icon: "🏃", color: "#4cc9f0" },
+      { label: "体重秤", icon: "⚖️", color: "#8ec5ff" },
+      { label: "健身卡", icon: "🎫", color: "#7b5cff" },
+      { label: "代餐粉", icon: "🥤", color: "#48cae4" },
     ];
 
     let px = W / 2;
@@ -1231,6 +1231,7 @@
           vx: Math.cos(ang) * speed,
           vy: Math.sin(ang) * speed,
           label: d.label,
+          icon: d.icon,
           color: d.color,
           wob: Math.random() * 6,
         });
@@ -1246,6 +1247,7 @@
         vx: Math.cos(ang) * speed,
         vy: Math.sin(ang) * speed,
         label: f.label,
+        icon: f.icon,
         color: f.color,
         gain: f.gain,
         wob: Math.random() * 6,
@@ -1520,10 +1522,25 @@
           g.arc(0, 0, item.r + 4, 0, Math.PI * 2);
           g.stroke();
         }
-        g.fillStyle = "#2a1200";
-        g.font = `bold ${Math.max(11, Math.round(item.r * 0.46))}px Songti SC, serif`;
+        // icon plate
+        g.fillStyle = "rgba(255,255,255,0.8)";
+        g.beginPath();
+        g.arc(0, -item.r * 0.05, item.r * 0.62, 0, Math.PI * 2);
+        g.fill();
+        g.font = `${Math.round(item.r * 0.86)}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
         g.textAlign = "center";
-        g.fillText(item.label, 0, item.r * 0.18);
+        g.textBaseline = "middle";
+        g.fillText(item.icon || "🍽", 0, -item.r * 0.04);
+        g.textBaseline = "alphabetic";
+        // name tag under the plate
+        const tag = Math.max(9, Math.round(item.r * 0.34));
+        g.font = `bold ${tag}px Songti SC, serif`;
+        const tw = g.measureText(item.label).width;
+        g.fillStyle = "rgba(30,10,20,0.62)";
+        roundRect(g, -tw / 2 - 5, item.r * 0.5, tw + 10, tag + 6, (tag + 6) / 2);
+        g.fill();
+        g.fillStyle = "#fff6fa";
+        g.fillText(item.label, 0, item.r * 0.5 + tag + 0.5);
         g.restore();
       });
 
@@ -1546,10 +1563,13 @@
       g.fillStyle = dashCd > 0 ? "rgba(255,255,255,0.35)" : "#ffd84d";
       g.font = "bold 13px sans-serif";
       g.fillText(dashCd > 0 ? `冲刺冷却 ${dashCd.toFixed(1)}s` : "空格 / 点击：饿虎扑食", 20, 144);
-      g.fillStyle = "rgba(255,231,241,0.7)";
-      g.font = "12px sans-serif";
-      g.textAlign = "right";
-      g.fillText(`下一步：${TIERS[Math.min(tier + 1, TIERS.length - 1)].name}`, W - 20, 76);
+      if (tier < TIERS.length - 1) {
+        const next = TIERS[tier + 1];
+        g.fillStyle = "rgba(255,231,241,0.72)";
+        g.font = "12px sans-serif";
+        g.textAlign = "left";
+        g.fillText(`下一阶段：${next.name}（${next.at} 斤）`, 20, 166);
+      }
     };
 
     return { reset, update, draw, startDash };
