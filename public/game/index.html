@@ -105,7 +105,7 @@
 let FILES = [], LINK_ID = '';
 
 const $ = id => document.getElementById(id);
-$('workerUrl').value = localStorage.getItem('y139_worker') || '';
+$('workerUrl').value = localStorage.getItem('y139_worker') || 'https://yun139-dl.zhiyuanzeng.workers.dev';
 $('authInput').value = localStorage.getItem('y139_auth') || '';
 updAuthState();
 
