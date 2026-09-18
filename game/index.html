@@ -57,6 +57,11 @@
     <h2>设置</h2>
     <div class="row">
       <input type="text" id="workerUrl" placeholder="Worker 地址，如 https://yun139-dl.xxx.workers.dev">
+      <button class="ghost" onclick="setLocal()">本地模式</button>
+    </div>
+    <div class="hint">
+      国内网络可能无法访问 workers.dev（点解析长时间无反应即为此情况）。<br>
+      解决办法：本机终端运行 <code>uv run yun139_web.py</code>，然后点上方「本地模式」——页面仍用在线版，数据走你本机服务。
     </div>
     <details>
       <summary>Authorization（下载必填，<span id="authState">未设置</span>）</summary>
@@ -126,6 +131,12 @@ function workerBase() {
   localStorage.setItem('y139_worker', w);
   return w;
 }
+function isLocal() { return /^https?:\/\/(localhost|127\.0\.0\.1)(:|\/|$)/.test($('workerUrl').value.trim()); }
+function setLocal() {
+  $('workerUrl').value = 'http://localhost:8139';
+  localStorage.setItem('y139_worker', $('workerUrl').value);
+  msg($('listMsg'), '已切换到本地模式。请确保本机终端正在运行 uv run yun139_web.py', true);
+}
 function getAuth() { return $('authInput').value.trim(); }
 function saveAuth() {
   let a = getAuth();
@@ -151,9 +162,15 @@ function updAuthState() {
 }
 
 async function api(path, body) {
-  const r = await fetch(workerBase() + path, {
-    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body),
-  });
+  let r;
+  try {
+    r = await fetch(workerBase() + path, {
+      method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body),
+    });
+  } catch (e) {
+    if (isLocal()) throw new Error('连不上本机服务：请先在终端运行 uv run yun139_web.py');
+    throw new Error('Worker 连接失败（你的网络可能屏蔽了 workers.dev，可点「本地模式」改用本机服务）');
+  }
   const d = await r.json().catch(() => ({ok: false, msg: '服务返回异常 HTTP ' + r.status}));
   if (!d.ok) throw new Error(d.msg || ('HTTP ' + r.status));
   return d;
@@ -194,10 +211,11 @@ function updSel() {
 }
 
 async function fetchUrl(f) {
-  const auth = getAuth();
-  if (!auth) throw new Error('请先在"设置"里粘贴 Authorization 并保存');
-  saveAuth();
-  const r = await api('/api/dl', {linkID: LINK_ID, coID: f.coID, auth: localStorage.getItem('y139_auth')});
+  let auth = getAuth();
+  if (auth) { saveAuth(); auth = localStorage.getItem('y139_auth'); }
+  else if (!isLocal()) throw new Error('请先在"设置"里粘贴 Authorization 并保存');
+  // 本地模式可不填 auth：本机服务使用自己缓存的登录 token
+  const r = await api('/api/dl', {linkID: LINK_ID, coID: f.coID, auth});
   return r.url;
 }
 
