@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>移动云盘下载器</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+         background: #0f172a; color: #e2e8f0; min-height: 100vh; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 24px 16px 60px; }
+  h1 { font-size: 22px; margin-bottom: 4px; }
+  h1 span { color: #38bdf8; }
+  .sub { color: #64748b; font-size: 13px; margin-bottom: 20px; }
+  .card { background: #1e293b; border-radius: 12px; padding: 18px 20px; margin-bottom: 16px;
+          border: 1px solid #334155; }
+  .card h2 { font-size: 15px; margin-bottom: 12px; color: #94a3b8; font-weight: 600; }
+  input[type=text], input[type=password] {
+    width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #475569;
+    background: #0f172a; color: #e2e8f0; font-size: 14px; outline: none; }
+  input:focus { border-color: #38bdf8; }
+  .row { display: flex; gap: 10px; margin-bottom: 10px; }
+  .row > * { flex: 1; }
+  button { padding: 10px 18px; border-radius: 8px; border: none; cursor: pointer;
+           font-size: 14px; font-weight: 600; background: #38bdf8; color: #082f49;
+           transition: opacity .15s; white-space: nowrap; }
+  button:hover { opacity: .85; }
+  button:disabled { opacity: .4; cursor: not-allowed; }
+  button.ghost { background: #334155; color: #cbd5e1; }
+  button.mini { padding: 4px 12px; font-size: 12px; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 99px; font-size: 12px; }
+  .badge.ok { background: #064e3b; color: #34d399; }
+  .badge.bad { background: #7f1d1d; color: #fca5a5; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid #334155; }
+  th { color: #64748b; font-weight: 500; }
+  td.size, th.size { text-align: right; white-space: nowrap; width: 90px; }
+  td.act, th.act { text-align: right; width: 70px; }
+  .name { word-break: break-all; }
+  .hidden { display: none; }
+  .msg { font-size: 13px; padding: 8px 12px; border-radius: 8px; margin-top: 10px; }
+  .msg.err { background: #7f1d1d33; color: #fca5a5; }
+  .msg.ok { background: #064e3b33; color: #34d399; }
+  details summary { cursor: pointer; color: #64748b; font-size: 13px; }
+  .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .toolbar .left { display: flex; gap: 14px; align-items: center; font-size: 13px; color: #94a3b8; }
+  .hint { font-size: 12px; color: #64748b; margin-top: 8px; line-height: 1.6; }
+  code { background: #0f172a; padding: 1px 6px; border-radius: 4px; font-size: 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>移动云盘<span>下载器</span> <span style="font-size:12px;color:#64748b">在线版</span></h1>
+  <div class="sub">yun.139.com 分享链接 → 直链下载 · 解析服务由 Cloudflare Worker 提供</div>
+
+  <div class="card">
+    <h2>设置</h2>
+    <div class="row">
+      <input type="text" id="workerUrl" placeholder="Worker 地址，如 https://yun139-dl.xxx.workers.dev">
+    </div>
+    <details>
+      <summary>Authorization（下载必填，<span id="authState">未设置</span>）</summary>
+      <div style="margin-top:10px" class="row">
+        <input type="text" id="authInput" placeholder="Basic xxx">
+        <button onclick="saveAuth()">保存</button>
+      </div>
+      <div class="hint">
+        获取：浏览器登录 <code>yun.139.com</code> → F12 → 应用 → Cookie → <code>authorization</code> 的值。
+        有效期 30 天，仅保存在本机浏览器 localStorage。
+      </div>
+    </details>
+  </div>
+
+  <div class="card">
+    <h2>1. 解析分享</h2>
+    <div class="row"><input type="text" id="url" placeholder="粘贴分享链接，如 https://yun.139.com/shareweb/#/w/i/xxx"></div>
+    <div class="row">
+      <input type="text" id="pwd" placeholder="提取码（没有则留空）">
+      <button id="listBtn" onclick="doList()">解析文件列表</button>
+    </div>
+    <div id="listMsg"></div>
+  </div>
+
+  <div class="card hidden" id="fileCard">
+    <h2>2. 下载文件</h2>
+    <div class="toolbar">
+      <div class="left">
+        <label><input type="checkbox" id="selAll" checked onchange="toggleAll()"> 全选</label>
+        <span id="selInfo"></span>
+      </div>
+      <button id="batchBtn" onclick="doBatch()">下载选中</button>
+    </div>
+    <div style="max-height:400px;overflow:auto">
+      <table><thead><tr><th></th><th>文件名</th><th class="size">大小</th><th class="act">操作</th></tr></thead>
+      <tbody id="fileList"></tbody></table>
+    </div>
+    <div class="hint">
+      点击下载后浏览器会直接开始下载（直链约 2 小时有效）。批量下载时浏览器可能提示"允许下载多个文件"，请选择允许。
+    </div>
+    <div id="dlMsg"></div>
+  </div>
+</div>
+
+<script>
+let FILES = [], LINK_ID = '';
+
+const $ = id => document.getElementById(id);
+$('workerUrl').value = localStorage.getItem('y139_worker') || '';
+$('authInput').value = localStorage.getItem('y139_auth') || '';
+updAuthState();
+
+function fmt(b) {
+  if (!b) return '0 B';
+  const u = ['B','KB','MB','GB','TB']; let i = 0;
+  while (b >= 1024 && i < 4) { b /= 1024; i++; }
+  return b.toFixed(b >= 100 || i < 2 ? 0 : 1) + ' ' + u[i];
+}
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function msg(el, text, ok) {
+  el.className = 'msg ' + (ok ? 'ok' : 'err'); el.textContent = text;
+  el.classList.remove('hidden');
+}
+function workerBase() {
+  const w = $('workerUrl').value.trim().replace(/\/+$/, '');
+  if (!w) throw new Error('请先在"设置"里填写 Worker 地址');
+  localStorage.setItem('y139_worker', w);
+  return w;
+}
+function getAuth() { return $('authInput').value.trim(); }
+function saveAuth() {
+  let a = getAuth();
+  if (a && !/^basic\s/i.test(a)) a = 'Basic ' + a;
+  localStorage.setItem('y139_auth', a);
+  $('authInput').value = a;
+  updAuthState();
+}
+function updAuthState() {
+  const a = $('authInput').value.trim();
+  let txt = '未设置', cls = 'bad';
+  if (a) {
+    txt = '已保存'; cls = 'ok';
+    try {
+      const raw = atob(a.replace(/^basic\s+/i, ''));
+      const exp = parseInt(raw.split(':')[2].split('|')[3]);
+      const d = new Date(exp);
+      txt += ' · 有效期至 ' + d.toLocaleDateString('zh-CN');
+      if (exp < Date.now()) { txt += '（已过期！）'; cls = 'bad'; }
+    } catch {}
+  }
+  $('authState').innerHTML = '<span class="badge ' + cls + '">' + txt + '</span>';
+}
+
+async function api(path, body) {
+  const r = await fetch(workerBase() + path, {
+    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body),
+  });
+  const d = await r.json().catch(() => ({ok: false, msg: '服务返回异常 HTTP ' + r.status}));
+  if (!d.ok) throw new Error(d.msg || ('HTTP ' + r.status));
+  return d;
+}
+
+async function doList() {
+  const url = $('url').value.trim(), pwd = $('pwd').value.trim(), m = $('listMsg');
+  if (!url) return msg(m, '请先粘贴分享链接', false);
+  $('listBtn').disabled = true;
+  m.classList.add('hidden');
+  try {
+    const r = await api('/api/list', {url, pwd});
+    FILES = r.files; LINK_ID = r.link_id;
+    $('fileList').innerHTML = FILES.map((f, i) =>
+      '<tr><td><input type="checkbox" class="fsel" data-i="' + i + '" checked onchange="updSel()"></td>' +
+      '<td class="name">' + esc(f.name) + '</td><td class="size">' + fmt(f.size) + '</td>' +
+      '<td class="act"><button class="mini" onclick="dlOne(' + i + ', this)">下载</button></td></tr>').join('');
+    $('fileCard').classList.remove('hidden');
+    $('selAll').checked = true;
+    updSel();
+    msg(m, '解析成功，共 ' + FILES.length + ' 个文件', true);
+  } catch (e) {
+    msg(m, e.message, false);
+  } finally {
+    $('listBtn').disabled = false;
+  }
+}
+
+function toggleAll() {
+  const on = $('selAll').checked;
+  document.querySelectorAll('.fsel').forEach(c => { c.checked = on; });
+  updSel();
+}
+function updSel() {
+  let n = 0, sz = 0;
+  document.querySelectorAll('.fsel:checked').forEach(c => { n++; sz += FILES[+c.dataset.i].size; });
+  $('selInfo').textContent = '已选 ' + n + ' 个 · ' + fmt(sz);
+}
+
+async function fetchUrl(f) {
+  const auth = getAuth();
+  if (!auth) throw new Error('请先在"设置"里粘贴 Authorization 并保存');
+  saveAuth();
+  const r = await api('/api/dl', {linkID: LINK_ID, coID: f.coID, auth: localStorage.getItem('y139_auth')});
+  return r.url;
+}
+
+function triggerDownload(url) {
+  const a = document.createElement('a');
+  a.href = url;
+  a.rel = 'noopener';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+
+async function dlOne(i, btn) {
+  const f = FILES[i], m = $('dlMsg');
+  if (btn) { btn.disabled = true; btn.textContent = '…'; }
+  try {
+    const url = await fetchUrl(f);
+    triggerDownload(url);
+    msg(m, '已开始下载: ' + f.name, true);
+  } catch (e) {
+    msg(m, f.name + ': ' + e.message, false);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '下载'; }
+  }
+}
+
+async function doBatch() {
+  const sel = [...document.querySelectorAll('.fsel:checked')].map(c => FILES[+c.dataset.i]);
+  if (!sel.length) return;
+  const m = $('dlMsg');
+  $('batchBtn').disabled = true;
+  let ok = 0, fail = 0;
+  for (const f of sel) {
+    try {
+      const url = await fetchUrl(f);
+      triggerDownload(url);
+      ok++;
+      msg(m, '批量下载进行中: ' + ok + ' 个已发起' + (fail ? '，' + fail + ' 个失败' : '') + '…', true);
+      await new Promise(r => setTimeout(r, 800)); // 避免浏览器拦截连续下载
+    } catch (e) {
+      fail++;
+      msg(m, f.name + ': ' + e.message, false);
+    }
+  }
+  msg(m, '完成：' + ok + ' 个已发起下载' + (fail ? '，' + fail + ' 个失败' : ''), !fail);
+  $('batchBtn').disabled = false;
+}
+</script>
+</body>
+</html>
